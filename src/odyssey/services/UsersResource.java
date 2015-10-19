@@ -7,7 +7,16 @@ package odyssey.services;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import odyssey.storage.comunication;
+
 import javax.ws.rs.PathParam;
+
+import java.sql.SQLException;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.PUT;
@@ -50,11 +59,35 @@ public class UsersResource {
      * 
      * @param content JSON Object with hashed information.
      * @return
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
     @POST
     @Produces("application/json")
     @Consumes("application/json")
-    public Response registeringUsers(String content) {
+    public Response registeringUsers(String content) throws SQLException, ClassNotFoundException {
+    	Object obj=JSONValue.parse(content);
+    	JSONObject json = (JSONObject)obj;
+
+    	//User
+    	String username = (String) json.get("username");
+    	String password = (String) json.get("password");
+    	System.out.println(username);
+    	System.out.println(password);
+    	
+    	
+    	boolean tam = comunication.getInstance().validate_user_length(username);
+    	System.out.println(tam);
+		comunication.getInstance().open();
+    	boolean existe = comunication.getInstance().validate_user_nick(username);
+    	comunication.getInstance().close();    	
+    	System.out.println(existe);
+    	if(tam && existe){
+    		comunication.getInstance().open();
+        	comunication.getInstance().new_user(username, password);  
+        	comunication.getInstance().close();
+    	}
+
         return Response.status(200).entity("Querying users").build();
     }
     

@@ -9,10 +9,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import odyssey.storage.comunication;
+
 import javax.ws.rs.PathParam;
+
+import java.sql.SQLException;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -45,16 +51,35 @@ public class LoginResource {
      * @param content
      * @return JSON Object with API Key.
      * @throws ParseException 
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
     @POST
     @Produces("application/json")
     @Consumes("application/json")
-    public Response loggingInUsers(String response) throws ParseException {
-    	
-    	System.out.println(response);
-        
+    public Response loggingInUsers(String response) throws ParseException, SQLException, ClassNotFoundException {
+    	Object obj=JSONValue.parse(response);
+    	JSONObject json = (JSONObject)obj;
 
-    	//JSONObject values =(JSONObject)userAuth;
+    	//User
+    	String username = (String) json.get("username");
+    	String password = (String) json.get("password");
+    	System.out.println(username);
+    	System.out.println(password);
+    	
+    	//Debe devolver false si existe  el usuario
+    	comunication.getInstance().open();
+    	boolean exists_user = comunication.getInstance().validate_user_nick(username);
+    	System.out.println(exists_user);
+    	//Debe devolver true si las credenciales son correctas
+    	boolean password_correct = comunication.getInstance().compare_pass(username, password);
+    	System.out.println(password_correct);
+    	comunication.getInstance().close();
+    	
+    	if(!exists_user && password_correct){
+    		System.out.println("Succesfully Rekt");
+    	}
+    	 
     	 return Response.status(200).entity("Logging in user with credentials: " ).build();
     }
     
