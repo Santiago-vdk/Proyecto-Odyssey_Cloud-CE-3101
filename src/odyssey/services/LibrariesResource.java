@@ -9,12 +9,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
 import com.sun.org.apache.xpath.internal.SourceTree;
 
 import javax.ws.rs.PathParam;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -22,6 +28,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import javax.ws.rs.Consumes;
@@ -163,13 +170,36 @@ public class LibrariesResource {
          * 
          * @param content
          * @return
+         * @throws IOException 
          */
         @POST
         @Produces("application/json")
         @Consumes("application/json")
-        public Response creatingSongs(String content) {
-            return Response.status(200).entity("Creating song inside, " + _libraryID + " for user: " + _userID).build();
+        public Response creatingSongs(String content) throws IOException {
+        	System.out.println("Creating song inside, " + _libraryID + " for user: " + _userID);
+ 
+        	Object obj=JSONValue.parse(content);
+        	JSONObject json = (JSONObject)obj;
+
+        	//User
+        	String name = (String) json.get("name");
+        	byte[] blob = (byte[]) json.get("blob");
+        	System.out.println(name);
+        	
+        	String OUTPUT_FILE_NAME = "C:\\Eclipse Servers\\usr\\servers\\OddyseyServer\\test1.mp3";
+        	
+        	DataOutputStream os = new DataOutputStream(new FileOutputStream("C:\\Eclipse Servers\\usr\\servers\\OddyseyServer\\test1.mp3"));
+        	 os.write(blob);
+        	 os.close();
+        	
+        	JSONObject response = new JSONObject();
+        	response.put("status", "Executed");
+        	
+            return Response.status(200).entity(response.toJSONString()).build();
         }
+        
+       
+
         
         /**
          * Retrieves a song inside a library.

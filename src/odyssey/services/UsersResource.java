@@ -101,7 +101,11 @@ public class UsersResource {
     @Path("{userID}")
     @Produces("application/json")
     public Response retrievingUsers(@PathParam("userID") String userID) {
-        return Response.status(200).entity("Retrieving user with id: " + userID).build();
+    	System.out.println("Sending user to client");
+    	JSONObject response = new JSONObject();
+    	response.put("id", new Integer(1));
+    	
+        return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
     
     /**
