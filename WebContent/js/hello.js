@@ -10,8 +10,16 @@ app.config(function ($routeProvider) {
             templateUrl: '../pages/mongodb.html',
             controller: 'ProfileCtrl'
         })
+        .when('/mongodash', {
+            templateUrl: '../pages/mongodashboard.html',
+            controller: 'ProfileCtrl'
+        })
         .when('/sqlserver', {
             templateUrl: '../pages/sqlserver.html',
+            controller: 'ProfileCtrl'
+        })
+        .when('/sqlquery', {
+            templateUrl: '../pages/query.html',
             controller: 'ProfileCtrl'
         })
         .otherwise({

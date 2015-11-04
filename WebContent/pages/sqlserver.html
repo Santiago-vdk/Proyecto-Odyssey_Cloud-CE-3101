@@ -1,32 +1,49 @@
 <html>
 
-<script src="../dist/js/bootstrap-table-filter.min.js"></script>
+
+        <!-- CodeMirror -->
+        <script src="../dist/js/codemirror.js"></script>
+        <link rel="stylesheet" href="../dist/css/codemirror.css">
+        <link rel="stylesheet" href="../dist/css/base16-light.css">
+        <link rel="stylesheet" href="../dist/css/show-hint.css" />
+        <script src="../dist/js/sql.js"></script>
+        <script src="../dist/js/show-hint.js"></script>
+        <script src="../dist/js/sql-hint.js"></script>
+        <script src="../dist/js/panel.js"></script>
+
+
+<script>
+var editor;
+
+
+    var mime = 'text/x-sql';
+    editor = CodeMirror(document.getElementById("query"), {
+        
+    	mode: mime,
+    	theme: "base16-light",
+        styleActiveLine: true,
+        indentWithTabs: true,
+        smartIndent: true,
+        lineNumbers: true,
+        matchBrackets: true,
+        autofocus: true,
+        extraKeys: {"Ctrl-Space": "autocomplete"}
+    });
+
+
+function getCode() {
+    return editor.getValue();
+};
+
+</script>
 
 <style>
-.dropdown-menu li>span {
-  display: block;
-  padding: 1px 10px;
-  clear: both;
-}
 
 </style>
 <body>
-<table data-toggle="table" data-url="data2.json" data-show-columns="true" data-search="true" data-show-refresh="true" data-show-toggle="true" data-show-export="true" data-pagination="true" data-height="299">
-    <thead>
-    <tr>
-        <th data-field="id">ID</th>
-        <th data-field="name">Item Name</th>
-        <th data-field="price">Item Price</th>
-    </tr>
-    <tr>
-        <td >1</th>
-    <td >Santiago</th>
-    <td >99</th>
-    </tr>
-    </thead>
-</table>
-
-
+<div id="query" style="height:500px;border: 1px solid black;;margin:5px;"></div>
+<br>
+<button type="button" class="btn btn-success">Run query</button>
 </body>
 
 </html>

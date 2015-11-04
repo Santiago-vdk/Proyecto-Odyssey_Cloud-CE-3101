@@ -1,0 +1,55 @@
+<html>
+
+<script src="../js/jstree.min.js"></script>
+<link href="../dist/css/tree/style.min.css" rel="stylesheet">
+
+<script>
+
+    $('#jstree').jstree({
+        'core': {
+            'data': {
+                "url": 'http://192.168.1.135:9080/OdysseyCloud/api/v1/users/1/libraries/1?type=tree',
+                "type": 'GET',
+                'dataType': 'JSON',
+                "data": function (n) {
+                    // get parent / grandparent node
+                    var lists = $(n).parents('ul');
+                    var p = $(lists[0]).prev('a');
+                    var gp = $(lists[1]).prev('a');
+                    // the result is fed to the AJAX request 'data' option
+                    return {
+                        "parent": $.trim(p.text()),
+                        "grandparent": $.trim(gp.text()),
+                        "id": n.attr ? n.attr("id").replace("node-", "") : 1,
+                    };
+                }
+            }
+        }
+    });
+
+    $('#jstree').on("changed.jstree", function (e, data) {
+        if (data.selected == "root") {
+            localStorage["viewinglibrary"] = data.selected; //Aqui identificador de la biblioteca, el due;o siempre es el username
+            window.location.href = "#/library/" + localStorage.username + "/" + String(data.selected);
+        } else {
+            localStorage["viewingsong"] = data.selected; //Aqui identificador de la cancion, el due;o siempre es el username
+            console.log(data.selected);
+            window.location.href = "#/song_info/" + localStorage.username + "/1/" + String(data.selected);
+        }
+    });
+
+
+    $('#jstree').bind("dblclick.jstree", function (event) {
+        var node = $(event.target).closest("li");
+        var data = node.data("jstree");
+        console.log("Doble click " + data);
+    });
+
+</script>
+
+<body>
+
+ <div id="jstree" ></div>
+
+</body>
+</html>
