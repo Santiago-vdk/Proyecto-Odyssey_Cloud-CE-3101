@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<script src="../dist/js/jsoneditor.min.js"></script>
+
+
+
+<body>
+    <div id='editor_holder'></div>
+<button id='submit'>Submit (console.log)</button>
+
+
+    <script>
+      // Initialize the editor with a JSON schema
+      var editor = new JSONEditor(document.getElementById('editor_holder'),{
+    	  theme: 'bootstrap3',
+    	  ajax: true,
+          
+          // The schema for the editor
+          schema: {
+        	  "title": "Person",
+        	  "type": "object",
+        	  "properties": {
+        	    "name": {
+        	      "type": "string",
+        	      "description": "First and Last name",
+        	      "minLength": 4,
+        	      "default": "Jeremy Dorn"
+        	    },
+        	    "age": {
+        	      "type": "integer",
+        	      "default": 25,
+        	      "minimum": 18,
+        	      "maximum": 99
+        	    },
+        	    "favorite_color": {
+        	      "type": "string",
+        	      "format": "color",
+        	      "title": "favorite color",
+        	      "default": "#ffa500"
+        	    },
+        	    "gender": {
+        	      "type": "string",
+        	      "enum": [
+        	        "male",
+        	        "female"
+        	      ]
+        	    },
+        	    "location": {
+        	      "type": "object",
+        	      "title": "Location",
+        	      "properties": {
+        	        "city": {
+        	          "type": "string",
+        	          "default": "San Francisco"
+        	        },
+        	        "state": {
+        	          "type": "string",
+        	          "default": "CA"
+        	        },
+        	        "citystate": {
+        	          "type": "string",
+        	          "description": "This is generated automatically from the previous two fields",
+        	          "template": "{{city}}, {{state}}",
+        	          "watch": {
+        	            "city": "location.city",
+        	            "state": "location.state"
+        	          }
+        	        }
+        	      }
+        	    },
+        	    "pets": {
+        	      "type": "array",
+        	      "format": "table",
+        	      "title": "Pets",
+        	      "uniqueItems": true,
+        	      "items": {
+        	        "type": "object",
+        	        "title": "Pet",
+        	        "properties": {
+        	          "type": {
+        	            "type": "string",
+        	            "enum": [
+        	              "cat",
+        	              "dog",
+        	              "bird",
+        	              "reptile",
+        	              "other"
+        	            ],
+        	            "default": "dog"
+        	          },
+        	          "name": {
+        	            "type": "string"
+        	          }
+        	        }
+        	      },
+        	      "default": [
+        	        {
+        	          "type": "dog",
+        	          "name": "Walter"
+        	        }
+        	      ]
+        	    }
+        	  }
+        	}
+      });
+      
+      // Hook up the submit button to log to the console
+      document.getElementById('submit').addEventListener('click',function() {
+        // Get the value from the editor
+        console.log(editor.getValue());
+      });
+    </script>
+
+</body>
+
+</html>

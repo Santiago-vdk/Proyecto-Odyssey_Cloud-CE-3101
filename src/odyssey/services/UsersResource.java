@@ -8,6 +8,7 @@ package odyssey.services;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -91,6 +92,47 @@ public class UsersResource {
         return Response.status(200).entity("Querying users").build();
     }
     
+    @GET
+    @Path("/me")
+    @Produces("application/json")
+    public Response retrievingUsers() {
+    	System.out.println("Sending my info.");
+    	JSONObject response = new JSONObject();
+    	response.put("id", "David el tragador");
+JSONArray amigos = new JSONArray();
+    	
+    	JSONObject amigo1 = new JSONObject();
+    	amigo1.put("user", "McQUiddy");
+    	amigos.add(amigo1);
+    	
+    	JSONObject amigo2 = new JSONObject();
+    	amigo2.put("user", "Cristian");
+    	amigos.add(amigo2);
+    	
+    	JSONObject amigo3 = new JSONObject();
+    	amigo3.put("user", "Casimiro");
+    	amigos.add(amigo3);
+    	
+    	JSONObject amigo4 = new JSONObject();
+    	amigo4.put("user", "Palmera");
+    	amigos.add(amigo4);
+    	
+    	JSONObject amigo5 = new JSONObject();
+    	amigo5.put("user", "Cali");
+    	amigos.add(amigo5);
+    	
+    	JSONObject amigo6 = new JSONObject();
+    	amigo6.put("user", "Fio");
+    	amigos.add(amigo6);
+    	
+    	
+    	
+    	
+    	response.put("friends", amigos);
+    	
+        return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+    }
+    
     /**
      * Retrieves information of a particular user.
      * 
@@ -101,10 +143,39 @@ public class UsersResource {
     @Path("{userID}")
     @Produces("application/json")
     public Response retrievingUsers(@PathParam("userID") String userID) {
-    	System.out.println("Sending user to client");
+    	System.out.println("Sending " + userID + "'s info.");
     	JSONObject response = new JSONObject();
-    	response.put("id", new Integer(1));
+    	response.put("id", userID);
+    	JSONArray amigos = new JSONArray();
     	
+    	JSONObject amigo1 = new JSONObject();
+    	amigo1.put("user", "McQUiddy");
+    	amigos.add(amigo1);
+    	
+    	JSONObject amigo2 = new JSONObject();
+    	amigo2.put("user", "Cristian");
+    	amigos.add(amigo2);
+    	
+    	JSONObject amigo3 = new JSONObject();
+    	amigo3.put("user", "Casimiro");
+    	amigos.add(amigo3);
+    	
+    	JSONObject amigo4 = new JSONObject();
+    	amigo4.put("user", "Palmera");
+    	amigos.add(amigo4);
+    	
+    	JSONObject amigo5 = new JSONObject();
+    	amigo5.put("user", "Cali");
+    	amigos.add(amigo5);
+    	
+    	JSONObject amigo6 = new JSONObject();
+    	amigo6.put("user", "Fio");
+    	amigos.add(amigo6);
+    	
+    	
+    	
+    	
+    	response.put("friends", amigos);
         return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
     

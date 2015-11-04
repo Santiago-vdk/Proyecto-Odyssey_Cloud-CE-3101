@@ -1,5 +1,4 @@
 package odyssey.storage;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +8,9 @@ public class comunication {
 	private static comunication _singleton = new comunication();
 	Connection connection;
 	Statement statement;
-	String connectionString = "jdbc:sqlserver://hyysfso8a0.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
-			+ "user=Odyssey@hyysfso8a0" + ";" + "password=x100preXD";
+	String connectionString = "jdbc:sqlserver://192.168.1.50;" + "databaseName=Odyssey;user=SA;password=Bases2013;";
+	/*String connectionString = "jdbc:sqlserver://hyysfso8a0.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
+			+ "user=Odyssey@hyysfso8a0" + ";" + "password=x100preXD";*/
 
 	/*
 	 * A private Constructor prevents any other class from instantiating.
@@ -138,6 +138,33 @@ public class comunication {
 		}
 		return libs;
 	}
+	
+	public void insert_song(String User, String Library,String Name,String Artist,String Album,String Year,String Duration,String Lyrics,byte[] Data) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call insert_song(?,?,?,?,?,?,?,?,?) }");
+		proc_stmt.setString(1, User);
+		proc_stmt.setString(2, Name);
+		proc_stmt.setString(3, Artist);
+		proc_stmt.setString(4, Album);
+		proc_stmt.setString(5, Duration);
+		proc_stmt.setString(6, Year);
+		proc_stmt.setBytes(7, Data);
+		proc_stmt.setString(8, Library);
+		proc_stmt.setString(9, Lyrics);
+		proc_stmt.executeUpdate();
+	}
+	
+	public byte[] retrieve_song(String User,String Name,String Artist) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call retrieve_song(?,?,?) }");
+		proc_stmt.setString(1, User);
+		proc_stmt.setString(2, Name);
+		proc_stmt.setString(3, Artist);
+		ResultSet rs = proc_stmt.executeQuery();
+		byte[] res = null;
+		while (rs.next()) {
+			res = rs.getBytes("Data");
+		}
+		return res;
+	}
 
 	public void close() throws SQLException {
 		connection.close();
@@ -145,7 +172,7 @@ public class comunication {
 
 	public static void main(String args[]) throws SQLException, ClassNotFoundException {
 		comunication.getInstance().open();
-		comunication.getInstance().drop_user("David");
+		
 		comunication.getInstance().close();
 	}
 
