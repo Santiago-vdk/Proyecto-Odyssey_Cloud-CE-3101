@@ -8,9 +8,9 @@ public class comunication {
 	private static comunication _singleton = new comunication();
 	Connection connection;
 	Statement statement;
-	String connectionString = "jdbc:sqlserver://192.168.1.50;" + "databaseName=Odyssey;user=SA;password=Bases2013;";
-	/*String connectionString = "jdbc:sqlserver://hyysfso8a0.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
-			+ "user=Odyssey@hyysfso8a0" + ";" + "password=x100preXD";*/
+	/*String connectionString = "jdbc:sqlserver://192.168.1.50;" + "databaseName=Odyssey;user=SA;password=Bases2013;";*/
+	String connectionString = "jdbc:sqlserver://hyysfso8a0.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
+			+ "user=Odyssey@hyysfso8a0" + ";" + "password=x100preXD";
 
 	/*
 	 * A private Constructor prevents any other class from instantiating.

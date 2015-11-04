@@ -1,10 +1,10 @@
 package odyssey.logic;
 
-public class Session {
+public class SessionObject {
 	private final String _user;
 	private final String _token;
 
-	public Session(String pUser, String pToken){
+	public SessionObject(String pUser, String pToken){
 		_user = pUser;
 		_token = pToken;
 	}

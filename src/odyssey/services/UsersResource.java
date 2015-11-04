@@ -12,11 +12,15 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import odyssey.logic.SessionObject;
+import odyssey.logic.Sessions;
+import odyssey.security.BCrypt;
 import odyssey.storage.comunication;
 
 import javax.ws.rs.PathParam;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -73,64 +77,82 @@ public class UsersResource {
     	//User
     	String username = (String) json.get("username");
     	String password = (String) json.get("password");
-    	System.out.println(username);
-    	System.out.println(password);
     	
-    	
+    	//Valido longitud del nombre de usuario nuevo
     	boolean tam = comunication.getInstance().validate_user_length(username);
-    	System.out.println(tam);
+    	
+    	//Valido si el nombre de usario existe
 		comunication.getInstance().open();
     	boolean existe = comunication.getInstance().validate_user_nick(username);
     	comunication.getInstance().close();    	
-    	System.out.println(existe);
+    	
+    	//Si no existe el nombre de usuario lo inserto.
     	if(tam && existe){
+			System.out.println("SERVER: Creating new user, " + username + "!");    		
     		comunication.getInstance().open();
         	comunication.getInstance().new_user(username, password);  
         	comunication.getInstance().close();
+        	return Response.status(201).build();
     	}
-
-        return Response.status(200).entity("Querying users").build();
+    	else {
+    		//Procesamiento fallo
+    		return Response.status(202).build();
+    	}
     }
     
-    @GET
+    @POST
     @Path("/me")
     @Produces("application/json")
-    public Response retrievingUsers() {
-    	System.out.println("Sending my info.");
-    	JSONObject response = new JSONObject();
-    	response.put("id", "David el tragador");
-JSONArray amigos = new JSONArray();
+    @Consumes("application/json")
+    public Response me(String content) {
+    	Object obj = JSONValue.parse(content);
+		JSONObject json = (JSONObject) obj;
+
+		// User
+		String token = (String) json.get("token");
+    	SessionObject session = Sessions.getInstance().find(token).getSession();
+    	if(session != null){
+    		JSONObject response = new JSONObject();
+    		response.put("id" ,session.getUser());
+    		
+        	JSONArray amigos = new JSONArray();
+        	
+        	JSONObject amigo1 = new JSONObject();
+        	amigo1.put("user", "McQUiddy");
+        	amigos.add(amigo1);
+        	
+        	JSONObject amigo2 = new JSONObject();
+        	amigo2.put("user", "Cristian");
+        	amigos.add(amigo2);
+        	
+        	JSONObject amigo3 = new JSONObject();
+        	amigo3.put("user", "Casimiro");
+        	amigos.add(amigo3);
+        	
+        	JSONObject amigo4 = new JSONObject();
+        	amigo4.put("user", "Palmera");
+        	amigos.add(amigo4);
+        	
+        	JSONObject amigo5 = new JSONObject();
+        	amigo5.put("user", "Cali");
+        	amigos.add(amigo5);
+        	
+        	JSONObject amigo6 = new JSONObject();
+        	amigo6.put("user", "Fio");
+        	amigos.add(amigo6);
+        	
+        	
+        	
+        	
+        	response.put("friends", amigos);
+    		return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     	
-    	JSONObject amigo1 = new JSONObject();
-    	amigo1.put("user", "McQUiddy");
-    	amigos.add(amigo1);
+    	}
+    	else {
+    		return Response.status(403).header("Access-Control-Allow-Origin", "*").build();
+    	}
     	
-    	JSONObject amigo2 = new JSONObject();
-    	amigo2.put("user", "Cristian");
-    	amigos.add(amigo2);
-    	
-    	JSONObject amigo3 = new JSONObject();
-    	amigo3.put("user", "Casimiro");
-    	amigos.add(amigo3);
-    	
-    	JSONObject amigo4 = new JSONObject();
-    	amigo4.put("user", "Palmera");
-    	amigos.add(amigo4);
-    	
-    	JSONObject amigo5 = new JSONObject();
-    	amigo5.put("user", "Cali");
-    	amigos.add(amigo5);
-    	
-    	JSONObject amigo6 = new JSONObject();
-    	amigo6.put("user", "Fio");
-    	amigos.add(amigo6);
-    	
-    	
-    	
-    	
-    	response.put("friends", amigos);
-    	
-        return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+        
     }
     
     /**
@@ -143,7 +165,6 @@ JSONArray amigos = new JSONArray();
     @Path("{userID}")
     @Produces("application/json")
     public Response retrievingUsers(@PathParam("userID") String userID) {
-    	System.out.println("Sending " + userID + "'s info.");
     	JSONObject response = new JSONObject();
     	response.put("id", userID);
     	JSONArray amigos = new JSONArray();
@@ -180,16 +201,47 @@ JSONArray amigos = new JSONArray();
     }
     
     /**
-     * Updates information of a particular user.
+     * Updates information of a particular user, generally the users password.
      * 
      * @param userID
      * @return 
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
     @PUT
     @Path("{userID}")
     @Consumes("application/json")
-    public Response updatingUsers(@PathParam("userID") String userID) {
-        return Response.status(200).entity("Updating user with id: " + userID).build();
+    public Response updatingUsers(String content, @PathParam("userID") String userID) throws SQLException, ClassNotFoundException {
+    	Object obj = JSONValue.parse(content);
+		JSONObject json = (JSONObject) obj;
+
+		// User
+		String username = (String) json.get("username");
+		String old_password = (String) json.get("old_password");
+		String new_password = (String) json.get("new_password");
+		
+		// Debe devolver false si existe el usuario
+		comunication.getInstance().open();
+		boolean exists_user = comunication.getInstance().validate_user_nick(username);
+
+		// Debe devolver true si las credenciales son correctas
+		boolean password_correct = comunication.getInstance().compare_pass(username, old_password);
+		comunication.getInstance().open();
+		
+		if (!exists_user && password_correct) {
+			// Usuario autenticado
+			System.out.println("SERVER: User, " + username + " changed his/her password!");
+			comunication.getInstance().open();
+			comunication.getInstance().update_pass(username, new_password);
+			comunication.getInstance().open();
+			return Response.status(200).build();
+		}
+		else {
+	        return Response.status(401).build();			
+		}
+		
+    	
+
     }
     
     /**
@@ -197,12 +249,57 @@ JSONArray amigos = new JSONArray();
      * 
      * @param userID
      * @return
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
     @DELETE
     @Path("{userID}")
     @Consumes("application/json")
-    public Response deletingUsers(@PathParam("userID") String userID) {
-        return Response.status(200).entity("Deleting user with id: " + userID).build();
+    public Response deletingUsers(String content, @PathParam("userID") String userID) throws ClassNotFoundException, SQLException {
+    	Object obj = JSONValue.parse(content);
+		JSONObject json = (JSONObject) obj;
+
+		// User
+		String username = (String) json.get("username");
+		String password = (String) json.get("password");
+		String token = (String) json.get("token");
+		
+		// Debe devolver false si existe el usuario
+		comunication.getInstance().open();
+		boolean exists_user = comunication.getInstance().validate_user_nick(username);
+
+		// Debe devolver true si las credenciales son correctas
+		boolean password_correct = comunication.getInstance().compare_pass(username, password);
+		comunication.getInstance().open();
+		
+		if (!exists_user && password_correct) {
+			//Confirmo que el usuario si existe en la BD, ahora verifico que su sesion este activa
+			SessionObject session = Sessions.getInstance().find(token).getSession();
+			if(session != null && session.getUser().compareTo(username) == 0){
+				//Confirmo que la sesion si esta activa, primero lo desconecto
+				Sessions.getInstance().deleteSession(token);
+				
+				//Ahora lo borro de la BD
+				System.out.println("SERVER: Deleting, " + username + " account!");
+				comunication.getInstance().open();
+				comunication.getInstance().drop_user(username);
+				comunication.getInstance().open();
+				return Response.status(200).build();
+			}
+			else {
+				//No autorizado
+				return Response.status(401).build();
+			}
+			
+		}
+		else {
+			//Acceso denegado
+	        return Response.status(403).build();			
+		}
+    	
+    	
+    	
+
     }
     
     

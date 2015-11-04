@@ -7,6 +7,17 @@ package odyssey.services;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import odyssey.logic.SessionObject;
+import odyssey.logic.Sessions;
+import odyssey.security.BCrypt;
+import odyssey.storage.comunication;
+
+import java.sql.Timestamp;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.POST;
@@ -18,7 +29,7 @@ import javax.ws.rs.core.Response;
  *
  * @author Shagy
  */
-@javax.ws.rs.ApplicationPath("logout")
+@Path("logout")
 public class LogoutResource {
 
     @Context
@@ -40,6 +51,26 @@ public class LogoutResource {
     @Produces("application/json")
     @Consumes("application/json")
     public Response loggingOutUsers(String content) {
-        return Response.status(200).entity("Logging out user with credentials: " + content).build();
+		Object obj = JSONValue.parse(content);
+		JSONObject json = (JSONObject) obj;
+
+		// User
+		String username = (String) json.get("username");
+		String token = (String) json.get("token");
+		
+		SessionObject session = Sessions.getInstance().find(token).getSession();
+		
+		if(session != null && session.getUser().compareTo(username) == 0){
+			//El token si pertenece a ese usuario, es seguro desconectarlo.
+			System.out.println("SERVER: User, " + username + " disconnecting!");
+			Sessions.getInstance().deleteSession(token);
+			return Response.status(200).build();
+		}
+		else {
+			//El usuario que se esta tratando de desconectar no posee esa combinacion de credenciales.
+			return Response.status(403).build();
+		}
+
+
     }
 }
