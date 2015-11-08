@@ -22,8 +22,8 @@ public class Sessions {
        return _singleton;
     }
 
-    public void createSession(String pUsername, String pToken) {
-    	SessionNode tmp = new SessionNode(pUsername, pToken);
+    public void createSession(String pUsername, String pToken, String pLoginTime) {
+    	SessionNode tmp = new SessionNode(pUsername, pToken, pLoginTime);
 
         if (_head == null) {
             _head = tmp;

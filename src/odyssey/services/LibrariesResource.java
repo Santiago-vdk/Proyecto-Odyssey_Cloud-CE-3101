@@ -16,6 +16,7 @@ import org.json.simple.JSONValue;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.sun.org.apache.xpath.internal.SourceTree;
 
+import odyssey.logic.Processing;
 import odyssey.storage.comunication;
 
 import javax.ws.rs.PathParam;
@@ -97,6 +98,8 @@ public class LibrariesResource {
     @Consumes("application/json")
     @Produces("application/json")
     public Response creatingLibraries(String content) {
+    	System.out.println("Here");
+    	
         return Response.status(200).entity("Creating Libraries for user: " + _userID).build();
     }
 
@@ -206,8 +209,16 @@ public class LibrariesResource {
     @PUT
     @Path("{libraryID}")
     @Consumes("application/json")
-    public Response updatingLibraries(@PathParam("libraryID") String libraryID) {
-        return Response.status(301).entity("Updating Libraries for user: " + _userID).build();
+    public Response updatingLibraries(String content, @PathParam("libraryID") String libraryID) {
+    	
+    	Object obj=JSONValue.parse(content);
+    	JSONArray json = (JSONArray)obj;
+    	
+    	JSONArray response = Processing.processSongs(json); //Es STATIC D:
+    	
+    	
+    	
+        return Response.status(301).entity(response.toJSONString()).build();
     }
     
     /**
@@ -288,34 +299,7 @@ public class LibrariesResource {
         	String OUTPUT_FILE_NAME = "C:\\Eclipse Servers\\usr\\servers\\OddyseyServer\\test1.mp3";
         	
         	byte[] decoded = Base64.decode(blob);
-        	
-        	comunication.getInstance().open();
-        	comunication.getInstance().insert_song("Santiago", "Lib", "Imagina Penes",
-        			"Rafalarga", 
-        			"Casitas Ajenas", 
-        			"1995", 
-        			"6969", 
-        			"Me gusta la vagina con quesito que me sepa Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa"
-        			+ "Me gusta la vagina con quesito que me sepa", 
-        			decoded);
-        	
 
-        	
-        	comunication.getInstance().close();
-
-        	
-        	
-        	
         	
         	
         	
@@ -334,9 +318,18 @@ public class LibrariesResource {
          */
         @GET
         @Path("{songID}")
-        @Produces("audio/mp3")
-        public Response retrieveSongs(@PathParam("songID") String songID, @HeaderParam("Range") String range) throws Exception {
+        //@Produces("audio/mp3")
+        @Produces("application/json")
+        public Response retrieveSongs(@PathParam("songID") String songID, @HeaderParam("Range") String range, @QueryParam("data") String data) throws Exception {
         	System.out.println("Sending song: " + songID +" info to client: " + _userID);
+        	
+        	if(data.compareTo("all") == 0){
+        		JSONObject response = new JSONObject();
+            	response.put("blob", "LOTS OF SHIT");
+            	Thread.sleep(2000);
+        		return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+        	}
+        	else {
         	JSONObject response = new JSONObject();
         	response.put("title", "Dig up her bones");
         	response.put("artist", "Misftis");
@@ -364,7 +357,7 @@ public class LibrariesResource {
         	response.put("comments", comments);
         	
             return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
-        	
+        	}
         	/*
         	comunication.getInstance().open();
         	byte[] blob = comunication.getInstance().retrieve_song("Pinga", "Imagina Penes", "Rafalarga");

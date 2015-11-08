@@ -5,8 +5,8 @@ public class SessionNode {
 	private SessionNode _prev = null;
 	private SessionObject _session = null;
 
-	public SessionNode(String pUsername, String pToken) {
-		_session = new SessionObject(pUsername, pToken);
+	public SessionNode(String pUsername, String pToken, String pLoginTime) {
+		_session = new SessionObject(pUsername, pToken, pLoginTime);
 	}
 	
 	public SessionObject getSession(){

@@ -1,4 +1,5 @@
 package odyssey.storage;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,6 @@ public class comunication {
 	private static comunication _singleton = new comunication();
 	Connection connection;
 	Statement statement;
-	/*String connectionString = "jdbc:sqlserver://192.168.1.50;" + "databaseName=Odyssey;user=SA;password=Bases2013;";*/
 	String connectionString = "jdbc:sqlserver://hyysfso8a0.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
 			+ "user=Odyssey@hyysfso8a0" + ";" + "password=x100preXD";
 
@@ -36,9 +36,13 @@ public class comunication {
 		Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 		connection = DriverManager.getConnection(connectionString);
 		if(connection == null){
-			System.out.println("rkt");
+			System.out.println("Connection lost");
 		}
 	}
+	
+	
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Validacion de user
 
 	// Valida si el numero de carateres de un usuario, devuelve tru si lo
 	// cumple.
@@ -118,52 +122,174 @@ public class comunication {
 		proc_stmt.setString(2, Lib_name);
 		proc_stmt.executeUpdate();
 	}
-
-	public void drop_lib(String user, String Lib) throws SQLException {
-		CallableStatement proc_stmt = connection.prepareCall("{ call insert_library(?,?) }");
-		proc_stmt.setString(1, user);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Operaciones sobre canciones
+	
+	
+	//despliega todas las canciones de la libreria de un usuario
+	public List<List<String>> get_songs_lib(String User,String Lib) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib(?,?) }");
+		proc_stmt.setString(1, User);
 		proc_stmt.setString(2, Lib);
-		proc_stmt.executeUpdate();
-	}
-
-	public List<String> get_Libs(String user) throws SQLException {
-		CallableStatement proc_stmt = connection.prepareCall("{ call get_librarys(?) }");
-		proc_stmt.setString(1, user);
 		ResultSet rs = proc_stmt.executeQuery();
-		String name = null;
-		List<String> libs = new ArrayList<String>();
+		List<List<String>> tmp = new ArrayList<List<String>>();
 		while (rs.next()) {
-			name = rs.getString("Lib_Name");
-			libs.add(name);
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add(rs.getString("Song_ID"));
+			tmp2.add(rs.getString("Song_Name"));
+			tmp2.add(rs.getString("Song_Artist"));
+			tmp2.add(rs.getString("Song_Album"));
+			tmp2.add(rs.getString("Song_Year"));
+			tmp2.add(rs.getString("Song_Gen"));
+			tmp2.add(rs.getString("Lyrics"));
+			tmp.add(tmp2);
 		}
-		return libs;
+		return tmp;
+		
 	}
 	
-	public void insert_song(String User, String Library,String Name,String Artist,String Album,String Year,String Duration,String Lyrics,byte[] Data) throws SQLException{
-		CallableStatement proc_stmt = connection.prepareCall("{ call insert_song(?,?,?,?,?,?,?,?,?) }");
+	//Inserta una nueva cancion
+	public void insert_song(String User, String Library,String Name,String Artist,String Album,String Year,String Gen,String Lyrics,byte[] Data,int local) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call insert_song(?,?,?,?,?,?,?,?,?,?) }");
 		proc_stmt.setString(1, User);
 		proc_stmt.setString(2, Name);
 		proc_stmt.setString(3, Artist);
 		proc_stmt.setString(4, Album);
-		proc_stmt.setString(5, Duration);
+		proc_stmt.setString(5, Gen);
 		proc_stmt.setString(6, Year);
 		proc_stmt.setBytes(7, Data);
 		proc_stmt.setString(8, Library);
 		proc_stmt.setString(9, Lyrics);
+		proc_stmt.setInt(10, local);
 		proc_stmt.executeUpdate();
 	}
 	
-	public byte[] retrieve_song(String User,String Name,String Artist) throws SQLException{
-		CallableStatement proc_stmt = connection.prepareCall("{ call retrieve_song(?,?,?) }");
-		proc_stmt.setString(1, User);
-		proc_stmt.setString(2, Name);
-		proc_stmt.setString(3, Artist);
+	//Devuelve bytes para el stream de una cancion, por
+	public byte[] retrieve_song(int id) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call retrieve_song(?) }");
+		proc_stmt.setInt(1,id);
 		ResultSet rs = proc_stmt.executeQuery();
 		byte[] res = null;
 		while (rs.next()) {
 			res = rs.getBytes("Data");
 		}
 		return res;
+	}
+	
+	
+	// actualiza una cancion que esta en cloud
+	public void update_song(int id,String Name,String Artist,String Album,String Year,String Gen,String Lyrics) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call update_song(?,?,?,?,?,?,?) }");
+		proc_stmt.setInt(1, id);
+		proc_stmt.setString(2, Name);
+		proc_stmt.setString(3, Artist);
+		proc_stmt.setString(4, Album);
+		proc_stmt.setString(5, Gen);
+		proc_stmt.setString(6, Year);
+		proc_stmt.setString(7, Lyrics);
+		proc_stmt.executeUpdate();
+	}
+	
+	// actualizar para commit
+	public void update_song_from_local(int local,String User,String Name,String Artist,String Album,String Year,String Gen,String Lyrics) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call update_song_from_local(?,?,?,?,?,?,?,?) }");
+		proc_stmt.setInt(1, local);
+		proc_stmt.setString(2, User);
+		proc_stmt.setString(3, Name);
+		proc_stmt.setString(4, Artist);
+		proc_stmt.setString(5, Album);
+		proc_stmt.setString(6, Gen);
+		proc_stmt.setString(7, Year);
+		proc_stmt.setString(8, Lyrics);
+		proc_stmt.executeUpdate();
+	}
+	
+	//despliegue de versiones de una cancion
+	public List<List<String>> get_songs_versions(int id) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_song_versions(?) }");
+		proc_stmt.setInt(1,id);
+		ResultSet rs = proc_stmt.executeQuery();
+		List<List<String>> tmp = new ArrayList<List<String>>();
+		while (rs.next()) {
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add(rs.getString("Song_Name"));
+			tmp2.add(rs.getString("Song_Artist"));
+			tmp2.add(rs.getString("Song_Album"));
+			tmp2.add(rs.getString("Song_Year"));
+			tmp2.add(rs.getString("Song_Gen"));
+			tmp2.add(rs.getString("Lyrics"));
+			tmp.add(tmp2);
+		}
+		return tmp;
+		
+	}
+	// devuelve los ids de las canciones de un usuario
+	public List<Integer> get_song_id(String User) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songID_local(?) }");
+		proc_stmt.setString(1,User);
+		ResultSet rs = proc_stmt.executeQuery();
+		List<Integer> tmp = new ArrayList<Integer>();
+		while (rs.next()) {
+			tmp.add(rs.getInt("Song_ID"));	
+		}
+		return tmp;
+	}
+	
+	// me verifica si una cancion ya existe.. para commit.. si no existe devuel false
+	public boolean exist(String User,int localid) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songID_ids (?) }");
+		proc_stmt.setString(1,User);
+		ResultSet rs = proc_stmt.executeQuery();
+		boolean flag = false;
+		while (rs.next()) {
+			if(localid==rs.getInt("LocalID")){
+				flag=true;
+			}
+		}
+		return !flag;
+	}
+	
+	// me verifica si la cancion tiene cambios.. para commit devuelve true si tiene cambios
+	public boolean have_changes(String User,int local,String Name,String Artist,String Album,String Year,String Gen,String Lyrics) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_song_data(?,?) }");
+		proc_stmt.setString(1,User);
+		proc_stmt.setInt(1,local);
+		ResultSet rs = proc_stmt.executeQuery();
+		boolean flag = false;
+		while (rs.next()) {
+			if(Name.equals(rs.getString("Song_Name"))&&
+			Artist.equals(rs.getString("Song_Artist"))&&
+			Album.equals(rs.getString("Song_Album"))&&
+			Year.equals(rs.getString("Song_Year"))&&
+			Gen.equals(rs.getString("Song_Gen"))&&
+			Lyrics.equals(rs.getString("Lyrics"))){
+				
+				flag=true;
+			}
+		}
+		return !flag;
+	
+	}
+	
+	// setea a una version establecida
+	public void set_version(int id,int version) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call set_version(?,?) }");
+		proc_stmt.setInt(1, id);
+		proc_stmt.setInt(2,version);
+		proc_stmt.executeUpdate();
+		
+	}
+	
+	
+	// metodo para commit de canciones
+	public void recieve_from_local(String User,String Library,String Name,String Artist,String Album,String Year,String Gen,String Lyrics,byte[] Blob,int Local) throws SQLException{
+		if (exist(User,Local)){
+			insert_song(User,Library,Name,Artist,Album,Year,Gen,Lyrics,Blob,Local);
+		}
+		else{
+			update_song_from_local(Local,User,Name,Artist,Album,Year,Gen,Lyrics);
+		}
+		
 	}
 
 	public void close() throws SQLException {
@@ -172,7 +298,7 @@ public class comunication {
 
 	public static void main(String args[]) throws SQLException, ClassNotFoundException {
 		comunication.getInstance().open();
-		
+		System.out.println(comunication.getInstance().get_songs_lib("Pinga", "neplib").get(1).get(2));
 		comunication.getInstance().close();
 	}
 

@@ -13,6 +13,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import odyssey.logic.SessionNode;
 import odyssey.logic.SessionObject;
 import odyssey.logic.Sessions;
 import odyssey.security.BCrypt;
@@ -79,22 +80,23 @@ public class LoginResource {
 
 		if (!exists_user && password_correct) {
 			// Usuario autenticado, reviso que no haya una sesion activa para ese usuario
-			/*SessionObject session = Sessions.getInstance().findByUsername(username).getSession();
-			if(session == null){*/
+			SessionNode session = Sessions.getInstance().findByUsername(username);
+			if(session == null){
 				//Sesion para ese usuario no existe
 				System.out.println("SERVER: User, " + username + " connecting!");
-				String toHash = password + new Timestamp(System.currentTimeMillis());
+				String time = new Timestamp(System.currentTimeMillis()).toString();
+				String toHash = password + time;
 				String hashed = BCrypt.hashpw(toHash, BCrypt.gensalt());
-				Sessions.getInstance().createSession(username, hashed);		
+				Sessions.getInstance().createSession(username, hashed, time);		
 				
 				JSONObject jsontoken = new JSONObject();
 				jsontoken.put("token", hashed);
 
 				return Response.status(200).entity(jsontoken.toJSONString()).build();
-			/*}
+			}
 			else {
 				return Response.status(403).build();
-			}*/
+			}
 			
 			
 		} else {

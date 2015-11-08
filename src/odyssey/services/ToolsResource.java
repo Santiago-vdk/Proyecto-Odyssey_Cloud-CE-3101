@@ -1,5 +1,7 @@
 package odyssey.services;
 
+import java.sql.Timestamp;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -94,5 +96,15 @@ public class ToolsResource {
     	results.add(friend3);
     	
 		return Response.status(200).entity(results.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+	}
+    
+    @GET
+    @Path("/time")
+    @Produces("application/json")
+	public Response test() {
+    	
+    	JSONObject time = new JSONObject();
+    	time.put("stamp",new Timestamp(System.currentTimeMillis()));
+		return Response.status(200).entity(time.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
 	}
 }
