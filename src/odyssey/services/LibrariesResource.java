@@ -205,19 +205,19 @@ public class LibrariesResource {
      * 
      * @param libraryID
      * @return
+     * @throws SQLException 
      */
     @PUT
     @Path("{libraryID}")
     @Consumes("application/json")
-    public Response updatingLibraries(String content, @PathParam("libraryID") String libraryID) {
+    public Response updatingLibraries(String content, @PathParam("libraryID") String libraryID) throws SQLException {
     	
     	Object obj=JSONValue.parse(content);
     	JSONArray json = (JSONArray)obj;
     	
-    	JSONArray response = Processing.processSongs(json); //Es STATIC D:
-    	
-    	
-    	
+    	Processing picha = new Processing();
+    	JSONArray response = picha.processSongs(_userID, json);
+   
         return Response.status(301).entity(response.toJSONString()).build();
     }
     
