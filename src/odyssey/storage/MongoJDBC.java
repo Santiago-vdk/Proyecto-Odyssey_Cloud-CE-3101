@@ -1,5 +1,4 @@
 package odyssey.storage;
-
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException;
@@ -23,14 +22,10 @@ public class MongoJDBC {
 	static DB db;
 	static DBCollection infoUser;
 	static DBCollection infoSong;
-	private static MongoJDBC _singleton = new MongoJDBC();
 	
-	private MongoJDBC(){
+	
+	public void MongoJDBC(){
 		
-	}
-	
-	public static MongoJDBC getInstance(){
-		return _singleton;
 	}
 	
 	public void openConnection (){
@@ -53,7 +48,8 @@ public class MongoJDBC {
 	}
 	
 	/**agregar user por primera vez */
-	public boolean addUser(String userName,String sexo,String generoPref){		
+	public boolean addUser(String userName,String generoPref){
+		openConnection();
 		infoUser = db.getCollection("Users");//toma la coleccion 
 		BasicDBObject comp = new BasicDBObject();//crea un documento que se va a usar para hacer la comparacion en la busqueda
 		comp.put("User", userName);//indica que se va a buscar la llave user y el valor indicado en el parametro
@@ -61,18 +57,22 @@ public class MongoJDBC {
 		if (cursor.count()==0){// si el cursor es 0 es por que no existe el user y entonces lo agrega			
 			BasicDBList friends = new BasicDBList();//lista donde se insertaran los amigos
 			BasicDBObject doc = new BasicDBObject("User", userName)//crea el documento para el user que se inserta
-	            .append("Sexo", sexo)
 	            .append("Genero Preferido", generoPref)	
 				.append("Amigos", friends);
 			infoUser.insert(doc);//inserta el user en la coleccion 
 			cursor.close();//limpia el cursor con el que se busco
+			closeConnection();
 			return true;
 		}
-		else return false;
+		else {
+			closeConnection();
+			return false;
+		}
 	}
 
 	/**agregar cancion por primera vez*/
 	public boolean addSong(String songID){
+		openConnection();
 		infoSong = db.getCollection("Songs");
 		BasicDBObject comp = new BasicDBObject();
 		comp.put("Song ID", songID);
@@ -84,13 +84,18 @@ public class MongoJDBC {
 					.append("Likes", 0);
 			infoSong.insert(doc);
 			cursor.close();
+			closeConnection();
 			return true;
 		}
-		else return false;
+		else {
+			closeConnection();
+			return false;
+		}
 	} 
 	
 	/**Agregar amigo */
 	public boolean addFriend(String userName,String friend){
+		openConnection();
 		infoUser = db.getCollection("Users");
 		BasicDBObject search = new BasicDBObject();//objeto con el que se busca el user
 		search.put("User", userName);
@@ -100,11 +105,13 @@ public class MongoJDBC {
 		toUpdate.removeField("Amigos");//se elimina del documento el valor de la llave amigos anterior a la actualizacion
 		toUpdate.put("Amigos", friendsList);//se asigna la lista actualizada de amigos al valor de la llave de amigos 
 		infoUser.update(search, toUpdate);//se actualiza el documento en la coleccion
+		closeConnection();
 		return true;
 	}
 	
 	/**Agregar un comentario a una cancion*/
 	public boolean addComment(String songID,String user, String commentStr){
+		openConnection();
 		infoSong = db.getCollection("Songs");
 		BasicDBObject search = new BasicDBObject();
 		search.put("Song ID", songID);
@@ -116,11 +123,13 @@ public class MongoJDBC {
 		toUpdate.removeField("Comentarios");
 		toUpdate.put("Comentarios", commentsList);
 		infoSong.update(search, toUpdate);
+		closeConnection();
 		return true;
 	}
 	
 	/**Agregar un like a una cancion*/
 	public boolean addLike(String songID){
+		openConnection();
 		infoSong = db.getCollection("Songs");
 		BasicDBObject search = new BasicDBObject();
 		search.put("Song ID", songID);
@@ -130,30 +139,9 @@ public class MongoJDBC {
 		toUpdate.removeField("Likes");
 		toUpdate.put("Likes", likes);
 		infoSong.update(search, toUpdate);
+		closeConnection();
 		return true;
 	}
-	
-	
 
 	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

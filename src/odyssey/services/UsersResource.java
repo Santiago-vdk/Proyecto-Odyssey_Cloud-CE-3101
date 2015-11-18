@@ -97,9 +97,10 @@ public class UsersResource {
 			comunication.getInstance().close();
 
 			// Insercion MongoDB
-			MongoJDBC.getInstance().openConnection();
-			MongoJDBC.getInstance().addUser(username, "null", "null");
-			MongoJDBC.getInstance().closeConnection();
+			MongoJDBC mongo = new MongoJDBC();
+			
+			mongo.addUser(username, "null");
+			
 
 			return Response.status(201).build();
 		} else {
@@ -258,9 +259,9 @@ public class UsersResource {
 				//Si lo esta solicitando el usuario correcto
 				System.out.println(username + " added, " + friend + " as friend! <3");
 				
-				MongoJDBC.getInstance().openConnection();
-				MongoJDBC.getInstance().addFriend(username, friend);
-				MongoJDBC.getInstance().closeConnection();
+				MongoJDBC mongo = new MongoJDBC();
+				mongo.addFriend(username, friend);
+				
 				
 				return Response.status(201).build();
 			} else {
