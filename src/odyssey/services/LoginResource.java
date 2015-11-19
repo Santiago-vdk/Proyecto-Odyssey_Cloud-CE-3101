@@ -69,14 +69,19 @@ public class LoginResource {
 		// User
 		String username = (String) json.get("username");
 		String password = (String) json.get("password");
+		
+		//Comunication instance
+		comunication com = new comunication();
 
 		// Debe devolver false si existe el usuario
-		comunication.getInstance().open();
-		boolean exists_user = comunication.getInstance().validate_user_nick(username);
+		com.open();
+		boolean exists_user = com.validate_user_nick(username);
+		com.close();
 
 		// Debe devolver true si las credenciales son correctas
-		boolean password_correct = comunication.getInstance().compare_pass(username, password);
-		comunication.getInstance().close();
+		com.open();
+		boolean password_correct = com.compare_pass(username, password);
+		com.close();
 
 		if (!exists_user && password_correct) {
 			// Usuario autenticado, reviso que no haya una sesion activa para ese usuario
@@ -98,11 +103,8 @@ public class LoginResource {
 				return Response.status(403).build();
 			}
 			
-			
 		} else {
 			return Response.status(401).build();
 		}
-
 	}
-
 }

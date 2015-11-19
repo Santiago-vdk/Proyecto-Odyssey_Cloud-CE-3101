@@ -65,7 +65,6 @@ public class UsersResource {
 	 * Registers new user in the database.
 	 * 
 	 * @param content
-	 *            JSON Object with hashed information.
 	 * @return
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
@@ -80,25 +79,30 @@ public class UsersResource {
 		// User
 		String username = (String) json.get("username");
 		String password = (String) json.get("password");
+		
+		//Comunication instance
+		comunication com = new comunication();
 
 		// Valido longitud del nombre de usuario nuevo
-		boolean tam = comunication.getInstance().validate_user_length(username);
+		boolean tam = com.validate_user_length(username);
 
 		// Valido si el nombre de usario existe
-		comunication.getInstance().open();
-		boolean existe = comunication.getInstance().validate_user_nick(username);
-		comunication.getInstance().close();
+		com.open();
+		boolean existe = com.validate_user_nick(username);
+		com.close();
 
 		// Si no existe el nombre de usuario lo inserto.
 		if (tam && existe) {
 			System.out.println("SERVER: Creating new user, " + username + "!");
-			comunication.getInstance().open();
-			comunication.getInstance().new_user(username, password);
-			comunication.getInstance().close();
+			com.open();
+			com.new_user(username, password);
+			System.out.println("SERVER: Creating new library for user: " + username + "!");
+			com.insert_lib(username, "1");
+			com.close();
 
 			// Insercion MongoDB
 			MongoJDBC mongo = new MongoJDBC();
-			
+			 
 			mongo.addUser(username, "null");
 			
 
@@ -225,21 +229,26 @@ public class UsersResource {
 			String username = (String) json.get("username");
 			String old_password = (String) json.get("old_password");
 			String new_password = (String) json.get("new_password");
+			
+			//Comunication instance
+			comunication com = new comunication();
 
 			// Debe devolver false si existe el usuario
-			comunication.getInstance().open();
-			boolean exists_user = comunication.getInstance().validate_user_nick(username);
+			com.open();
+			boolean exists_user = com.validate_user_nick(username);
+			com.close();
 
 			// Debe devolver true si las credenciales son correctas
-			boolean password_correct = comunication.getInstance().compare_pass(username, old_password);
-			comunication.getInstance().open();
+			com.open();
+			boolean password_correct = com.compare_pass(username, old_password);
+			com.close();
 
 			if (!exists_user && password_correct) {
 				// Usuario autenticado
 				System.out.println("SERVER: User, " + username + " changed his/her password!");
-				comunication.getInstance().open();
-				comunication.getInstance().update_pass(username, new_password);
-				comunication.getInstance().open();
+				com.open();
+				com.update_pass(username, new_password);
+				com.close();
 				return Response.status(200).build();
 			} else {
 				return Response.status(401).build();
@@ -298,14 +307,19 @@ public class UsersResource {
 		String username = (String) json.get("username");
 		String password = (String) json.get("password");
 		String token = (String) json.get("token");
+		
+		//Comunication instance
+		comunication com = new comunication();
 
 		// Debe devolver false si existe el usuario
-		comunication.getInstance().open();
-		boolean exists_user = comunication.getInstance().validate_user_nick(username);
+		com.open();
+		boolean exists_user = com.validate_user_nick(username);
+		com.close();
 
 		// Debe devolver true si las credenciales son correctas
-		boolean password_correct = comunication.getInstance().compare_pass(username, password);
-		comunication.getInstance().open();
+		com.open();
+		boolean password_correct = com.compare_pass(username, password);
+		com.close();
 
 		if (!exists_user && password_correct) {
 			// Confirmo que el usuario si existe en la BD, ahora verifico que su
@@ -317,9 +331,9 @@ public class UsersResource {
 
 				// Ahora lo borro de la BD
 				System.out.println("SERVER: Deleting, " + username + " account!");
-				comunication.getInstance().open();
-				comunication.getInstance().drop_user(username);
-				comunication.getInstance().open();
+				com.open();
+				com.drop_user(username);
+				com.close();
 				return Response.status(200).build();
 			} else {
 				// No autorizado

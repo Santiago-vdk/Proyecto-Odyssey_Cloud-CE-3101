@@ -1,27 +1,25 @@
 package odyssey.storage;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class comunication {
 
-	private static comunication _singleton = new comunication();
 	Connection connection;
 	Statement statement;
-	String connectionString = "jdbc:sqlserver://hyysfso8a0.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
-			+ "user=Odyssey@hyysfso8a0" + ";" + "password=x100preXD";
+	String connectionString = "jdbc:sqlserver://qi3tj3cjc7.database.windows.net:1433" + ";" + "database=OdysseyDB" + ";"
+			+ "user=Rafael@qi3tj3cjc7" + ";" + "password=x100preXD";
+	
+	//String connectionString2 = "jdbc:sqlserver://192.168.1.129;" + "databaseName=OdysseyDB;user=SA;password=Badilla94;";
 
 	/*
 	 * A private Constructor prevents any other class from instantiating.
 	 */
-	private comunication() {
+	public comunication() {
 	}
 
 	/* Static 'instance' method */
-	public static comunication getInstance() {
-		return _singleton;
-	}
+	
 
 	/* Other methods protected by singleton-ness */
 	protected static void demoMethod() {
@@ -235,7 +233,7 @@ public class comunication {
 		return tmp;
 	}
 	
-	// me verifica si una cancion ya existe.. para commit.. si no existe devuel false
+	// me verifica si una cancion ya existe.. para commit.. si  existe devuelve true
 	public boolean exist(String User,int localid) throws SQLException{
 		CallableStatement proc_stmt = connection.prepareCall("{ call get_songID_ids (?) }");
 		proc_stmt.setString(1,User);
@@ -246,14 +244,14 @@ public class comunication {
 				flag=true;
 			}
 		}
-		return !flag;
+		return flag;
 	}
 	
 	// me verifica si la cancion tiene cambios.. para commit devuelve true si tiene cambios
 	public boolean have_changes(String User,int local,String Name,String Artist,String Album,String Year,String Gen,String Lyrics) throws SQLException{
 		CallableStatement proc_stmt = connection.prepareCall("{ call get_song_data(?,?) }");
 		proc_stmt.setString(1,User);
-		proc_stmt.setInt(1,local);
+		proc_stmt.setInt(2,local);
 		ResultSet rs = proc_stmt.executeQuery();
 		boolean flag = false;
 		while (rs.next()) {
@@ -279,6 +277,18 @@ public class comunication {
 		proc_stmt.executeUpdate();
 		
 	}
+	public int getid(String User,int localid) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_my_id_m8(?,?) }");
+		proc_stmt.setString(1, User);
+		proc_stmt.setInt(2,localid);
+		ResultSet rs = proc_stmt.executeQuery();
+		int tmp=0;
+		while (rs.next()) {
+			tmp=rs.getInt("Song_ID");
+			
+		}
+		return tmp;
+	}
 	
 	
 	// metodo para commit de canciones
@@ -291,15 +301,40 @@ public class comunication {
 		}
 		
 	}
+	
+	public List<String> get_songs_lib2(int id) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib2(?) }");
+		proc_stmt.setInt(1,id);
+		ResultSet rs = proc_stmt.executeQuery();
+		List<String> tmp2 = new ArrayList<String>();
+		while (rs.next()) {
+			tmp2.add(rs.getString("Song_Name"));
+			tmp2.add(rs.getString("Song_Artist"));
+			tmp2.add(rs.getString("Song_Album"));
+			tmp2.add(rs.getString("Song_Year"));
+			tmp2.add(rs.getString("Song_Gen"));
+			tmp2.add(rs.getString("Lyrics"));
+			tmp2.add(rs.getString("LocalID"));
+			
+		}
+		return tmp2;
+		
+	}
+	
 
 	public void close() throws SQLException {
 		connection.close();
+		
 	}
 
 	public static void main(String args[]) throws SQLException, ClassNotFoundException {
-		comunication.getInstance().open();
-		System.out.println(comunication.getInstance().get_songs_lib("Pinga", "neplib").get(1).get(2));
-		comunication.getInstance().close();
+		
+		comunication pinga = new comunication();
+		pinga.open();
+		byte[] data = "asdfasdfasdfasdfasdf".getBytes();
+		pinga.insert_song("santi2", "1", "pinga", "fafa", "cancer", "213", "caca", "gayu ay", data, 1);
+		pinga.close();
+		
 	}
 
 }
