@@ -3,6 +3,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
+import com.mongodb.util.JSON;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.BasicDBList;
@@ -12,9 +13,14 @@ import com.mongodb.DBCursor;
 import com.mongodb.ServerAddress;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.util.JSON;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import org.bson.BasicBSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.*;
 
 
 public class MongoJDBC {
@@ -70,6 +76,14 @@ public class MongoJDBC {
 		}
 	}
 
+	public void deleteUser(String userName){
+		openConnection();
+		infoUser = db.getCollection("Users");//toma la coleccion 
+		BasicDBObject comp = new BasicDBObject();//crea un documento que se va a usar para hacer la comparacion en la busqueda
+		comp.put("User", userName);//indica que se va a buscar la llave user y el valor indicado en el parametro
+		infoUser.remove(comp);
+	}
+	
 	/**agregar cancion por primera vez*/
 	public boolean addSong(String songID){
 		openConnection();
@@ -93,20 +107,65 @@ public class MongoJDBC {
 		}
 	} 
 	
+	public void deleteSong(String songID){
+		openConnection();
+		infoSong = db.getCollection("Songs"); 
+		BasicDBObject comp = new BasicDBObject();
+		comp.put("Song ID", songID);
+		infoSong.remove(comp);
+	}
 	/**Agregar amigo */
 	public boolean addFriend(String userName,String friend){
 		openConnection();
 		infoUser = db.getCollection("Users");
-		BasicDBObject search = new BasicDBObject();//objeto con el que se busca el user
-		search.put("User", userName);
-		BasicDBObject toUpdate = (BasicDBObject)infoUser.findOne(search);//crea una copia del documento del user al que se le añadiran amigos
-		BasicDBList friendsList =(BasicDBList) toUpdate.get("Amigos");//toma el valor de la llave de Amigos del user (la primera vez es una lista vacia, despues es la lista con los amigos ya agregados)
-		friendsList.add(friend);//se añade el amig deseado a la lista
-		toUpdate.removeField("Amigos");//se elimina del documento el valor de la llave amigos anterior a la actualizacion
-		toUpdate.put("Amigos", friendsList);//se asigna la lista actualizada de amigos al valor de la llave de amigos 
-		infoUser.update(search, toUpdate);//se actualiza el documento en la coleccion
-		closeConnection();
-		return true;
+		BasicDBObject search1 = new BasicDBObject();//objeto con el que se busca el user
+		BasicDBObject search2 = new BasicDBObject();
+		search1.put("User", userName);
+		search2.put("User", friend);
+		BasicDBObject toUpdate1 = (BasicDBObject)infoUser.findOne(search1);//crea una copia del documento del user al que se le añadiran amigos
+		BasicDBObject toUpdate2 = (BasicDBObject)infoUser.findOne(search2);
+		BasicDBList friendsList1 =(BasicDBList) toUpdate1.get("Amigos");//toma el valor de la llave de Amigos del user (la primera vez es una lista vacia, despues es la lista con los amigos ya agregados)
+		BasicDBList friendsList2 =(BasicDBList) toUpdate2.get("Amigos");
+		if (!friendsList1.contains((Object)friend)){
+			friendsList1.add(friend);//se añade el amigo deseado a la lista
+			friendsList2.add(userName);
+			toUpdate1.removeField("Amigos");//se elimina del documento el valor de la llave amigos anterior a la actualizacion
+			toUpdate2.removeField("Amigos");
+			toUpdate1.put("Amigos", friendsList1);//se asigna la lista actualizada de amigos al valor de la llave de amigos 
+			toUpdate2.put("Amigos", friendsList2);
+			infoUser.update(search1, toUpdate1);//se actualiza el documento en la coleccion
+			infoUser.update(search2, toUpdate2);
+			closeConnection();
+			return true;
+			}
+		else
+			return false;
+	}
+	
+	public void deleteFriend(String user, String friend){
+		openConnection();
+		infoUser = db.getCollection("Users");
+		BasicDBObject search1 = new BasicDBObject();
+		BasicDBObject search2 = new BasicDBObject();
+		search1.put("User", user);
+		search2.put("User", friend);
+		BasicDBObject toUpdate1 = (BasicDBObject)infoUser.findOne(search1);
+		BasicDBObject toUpdate2 = (BasicDBObject)infoUser.findOne(search2);
+		BasicDBList friendsList1=(BasicDBList) toUpdate1.get("Amigos");
+		BasicDBList friendsList2=(BasicDBList) toUpdate2.get("Amigos");
+		if (friendsList1.contains((Object)friend)){
+			friendsList1.remove(friend);
+			friendsList2.remove(user);
+			toUpdate1.removeField("Amigos");
+			toUpdate2.removeField("Amigos");
+			toUpdate1.put("Amigos", friendsList1); 
+			toUpdate2.put("Amigos", friendsList2);
+			infoUser.update(search1, toUpdate1);
+			infoUser.update(search2, toUpdate2);
+			closeConnection();
+		
+			}
+				
 	}
 	
 	/**Agregar un comentario a una cancion*/
@@ -117,9 +176,10 @@ public class MongoJDBC {
 		search.put("Song ID", songID);
 		BasicDBObject toUpdate = (BasicDBObject)infoSong.findOne(search);
 		BasicDBList commentsList =(BasicDBList) toUpdate.get("Comentarios");
-		BasicDBObject comment =new BasicDBObject();//crea un objeto con el usuario que comenta como llave y el comentario como valor (cada comentario y su usuario va en un documento aparte)
-		comment.put(user, commentStr);
-		commentsList.add(comment);//lista de comentarios(es una lista de documento)
+		BasicDBObject comment =new BasicDBObject();//crea un objeto con una llave usuario con el valor del nombre de usuario y otra llave comentario con el valor comentario (cada comentario y su usuario va en un documento aparte)
+		comment.put("user", user);
+		comment.put("comment", commentStr);
+		commentsList.add(comment);//lista de comentarios(es una lista de documentos)
 		toUpdate.removeField("Comentarios");
 		toUpdate.put("Comentarios", commentsList);
 		infoSong.update(search, toUpdate);
@@ -142,6 +202,149 @@ public class MongoJDBC {
 		closeConnection();
 		return true;
 	}
+	
+	public boolean disLike(String songID){
+		openConnection();
+		infoSong = db.getCollection("Songs");
+		BasicDBObject search = new BasicDBObject();
+		search.put("Song ID", songID);
+		BasicDBObject toUpdate = (BasicDBObject)infoSong.findOne(search);
+		Integer likes =(Integer) toUpdate.get("Likes");
+		likes -=1;
+		toUpdate.removeField("Likes");
+		toUpdate.put("Likes", likes);
+		infoSong.update(search, toUpdate);
+		closeConnection();
+		return true;
+	}
 
+	public int getLikes (String songID){
+		openConnection();
+		infoSong = db.getCollection("Songs");
+		BasicDBObject search = new BasicDBObject();
+		search.put("Song ID", songID);
+		BasicDBObject objective = (BasicDBObject)infoSong.findOne(search);
+		Integer likes =(Integer) objective.get("Likes");
+		closeConnection();
+		return likes;
+	}
+	
+	public ArrayList<JSONObject> getComments(String songID){
+		
+		openConnection();
+		infoSong = db.getCollection("Songs");
+		BasicDBObject search = new BasicDBObject();
+		search.put("Song ID", songID);
+		BasicDBObject objective = (BasicDBObject)infoSong.findOne(search);
+		BasicDBList commentsList =(BasicDBList) objective.get("Comentarios");
+		ArrayList<JSONObject> res =new ArrayList<JSONObject>();
+		JSONObject j =new JSONObject();
+		for (Object o : commentsList){	
+			JSONParser  p = new JSONParser();
+			try {
+				j =(JSONObject) p.parse(o.toString());
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			res.add(j);
+		}	
+		closeConnection();
+		return res;
+			
+	}
+	
+	public ArrayList<String> getFriends(String UserName){
+		openConnection();
+		infoUser = db.getCollection("Users");
+		BasicDBObject search = new BasicDBObject();
+		search.put("User", UserName);
+		BasicDBObject objective = (BasicDBObject)infoUser.findOne(search);
+		System.out.println(objective);
+		if (objective!=null){
+			BasicDBList friendsList =(BasicDBList) objective.get("Amigos");
+			ArrayList<String> res =new ArrayList<String>();
+			if (friendsList.isEmpty()){
+				closeConnection();
+				return res;
+			}
+			for (Object o : friendsList){	
+				String temp = o.toString();
+				res.add(temp);
+			}
+			closeConnection();
+			return res;
+			
+		}
+		
+		else {
+			closeConnection();
+			return null;
+		}
+	}
+	
+	public ArrayList<String> findOnComments (String compare){
+		ArrayList<String> res=new ArrayList<String>();
+		openConnection();
+		infoSong = db.getCollection("Songs");
+		DBCursor cursor = infoSong.find();
+		while (cursor.hasNext()){
+			DBObject actual = cursor.next();
+			Object o = actual.get("Comentarios");
+			if(o.toString().contains(compare)){
+				String temp =(String) actual.get("Song ID");
+				res.add(temp);
+			}
+		}
+		closeConnection();
+		return res;
+	}
+	
+	public void setFavoriteGen(String user, String gen){
+		openConnection();
+		infoUser = db.getCollection("Users");
+		BasicDBObject search = new BasicDBObject();
+		search.put("User", user);
+		BasicDBObject toUpdate = (BasicDBObject)infoUser.findOne(search);
+		toUpdate.removeField("Genero Preferido");
+		toUpdate.put("Genero Preferido", gen);
+		infoUser.update(search,toUpdate);
+		closeConnection();
+	}
+	
+	public String gerFavoriteGen(String user){
+		openConnection();
+		infoUser = db.getCollection("Users");
+		BasicDBObject search = new BasicDBObject();
+		search.put("User", user);
+		BasicDBObject objective = (BasicDBObject)infoUser.findOne(search);
+		String res = (String)objective.get("Genero Preferido");
+		closeConnection();
+		return res;
+		
+	}
+	
+	
+	public ArrayList<String> suggestFriends(String user){
+		ArrayList<String> res = new ArrayList<String>();
+		openConnection();
+		infoUser = db.getCollection("Users");
+		BasicDBObject search = new BasicDBObject();
+		search.put("User", user);
+		BasicDBObject objective = (BasicDBObject)infoUser.findOne(search);
+		String genCompare = (String) objective.get("Genero Preferido");
+		DBCursor cursor = infoUser.find();
+		while(cursor.hasNext()){
+			DBObject actual = cursor.next();
+			Object o = actual.get("Genero Preferido");
+			String ob = (String)actual.get("User");
+			if(genCompare.compareTo((String)o)==0 && ob.compareTo((String)objective.getString("User"))!=0){
+				res.add(ob);
+			}
+		}
+		closeConnection();
+		return  res;
+	}
+	
 	
 }

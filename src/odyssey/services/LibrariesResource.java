@@ -17,6 +17,7 @@ import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.sun.org.apache.xpath.internal.SourceTree;
 
 import odyssey.logic.Processing;
+import odyssey.storage.MongoJDBC;
 import odyssey.storage.comunication;
 
 import javax.ws.rs.PathParam;
@@ -40,7 +41,9 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -150,48 +153,34 @@ public class LibrariesResource {
 				return Response.status(200).entity(result.toJSONString()).header("Access-Control-Allow-Origin", "*")
 						.build();
 			} else if (type.compareTo("lib") == 0) {
-				// Library page request
+				System.out.println("Reading, " + _userID + "'s library!");
+				// Retorna la biblioteca de un usuario
 
 				JSONObject data = new JSONObject();
 
-				data.put("id", "Nombre biblioteca");
-				data.put("owner", "David el tragador");
+				comunication com = new comunication();
+				com.open();
+				List<List<String>> library = com.get_songs_lib(_userID);
+				com.close();
 
-				// Canciones de la biblioteca
+				data.put("id", "1");
+				data.put("owner", _userID);
 				JSONArray songsArray = new JSONArray();
-				JSONObject song1 = new JSONObject();
-				song1.put("title", "Song Name 1");
-				song1.put("artist", "artist");
-				song1.put("album", "album");
-				song1.put("year", "year");
-				song1.put("genre", "rock");
-				songsArray.add(song1);
-
-				JSONObject song2 = new JSONObject();
-				song2.put("title", "Song Name 2");
-				song2.put("artist", "Artist");
-				song2.put("album", "album");
-				song2.put("year", "year");
-				song2.put("genre", "pop");
-				songsArray.add(song2);
-
-				JSONObject song3 = new JSONObject();
-				song3.put("title", "Song Name 2");
-				song3.put("artist", "Artist");
-				song3.put("album", "album");
-				song3.put("year", "year");
-				song3.put("genre", "pop");
-				songsArray.add(song3);
-
-				JSONObject song4 = new JSONObject();
-				song4.put("title", "Song Name 2");
-				song4.put("artist", "Artist");
-				song4.put("album", "album");
-				song4.put("year", "year");
-				song4.put("genre", "pop");
-				songsArray.add(song4);
+				for (int i = 0; i < library.size(); i++) {
+					JSONObject song = new JSONObject();
+					song.put("id", library.get(i).get(0));
+					song.put("title", library.get(i).get(1));
+					song.put("artist", library.get(i).get(2));
+					song.put("album", library.get(i).get(3));
+					song.put("year", library.get(i).get(4));
+					song.put("genre", library.get(i).get(5));
+					song.put("lyrics", library.get(i).get(6));
+					songsArray.add(song);
+				}
 
 				data.put("songs", songsArray);
+
+				System.out.println(data);
 
 				return Response.status(200).entity(data.toJSONString()).header("Access-Control-Allow-Origin", "*")
 						.build();
@@ -329,6 +318,13 @@ public class LibrariesResource {
 						Integer.parseInt(id));
 				com.close();
 
+				com.open();
+				int globalID = com.getid(_userID, Integer.parseInt(id));
+				com.close();
+
+				MongoJDBC mongo = new MongoJDBC();
+				mongo.addSong(String.valueOf(globalID));
+
 				JSONObject response = new JSONObject();
 				response.put("status", "Executed");
 
@@ -352,50 +348,78 @@ public class LibrariesResource {
 		@Produces("application/json")
 		public Response retrieveSongs(@PathParam("songID") String songID, @QueryParam("data") String data)
 				throws Exception {
-			System.out.println("Sending song: " + songID + " info to client: " + _userID);
 
 			if (data.compareTo("all") == 0) {
 				System.out.println("Pulling all the song");
-
 				Processing processing = new Processing();
 				JSONObject response = processing.pullSong(_userID, songID);
 				if (response == null) {
 					return Response.status(404).header("Access-Control-Allow-Origin", "*").build();
-
 				} else {
 					return Response.status(200).entity(response.toJSONString())
 							.header("Access-Control-Allow-Origin", "*").build();
-
 				}
-			} else {
+			} else if (data.compareTo("social") == 0) {
+				System.out.println("social");
 				JSONObject response = new JSONObject();
-				response.put("title", "Dig up her bones");
-				response.put("artist", "Misftis");
-				response.put("album", "American Psycho");
-				response.put("year", "1997");
-				response.put("owner", "David el tragador");
-				response.put("commentcount", 1);
-				response.put("lyrics", "La la la que pedo guey");
+				MongoJDBC mongo = new MongoJDBC();
 
+				comunication com = new comunication();
+				com.open();
+				List<String> metadata = com.get_songs_lib2(Integer.parseInt(songID));
+				com.close();
+
+				response.put("globalid", songID);
+				response.put("title", metadata.get(0));
+				response.put("artist", metadata.get(1));
+				response.put("album", metadata.get(2));
+				response.put("year", metadata.get(3));
+				response.put("genre", metadata.get(4));
+				response.put("lyrics", metadata.get(5));
+
+				ArrayList<JSONObject> commentArray = mongo.getComments(songID);
+				System.out.println(commentArray.size());
 				JSONArray comments = new JSONArray();
-
-				JSONObject comment1 = new JSONObject();
-				comment1.put("user", "Santi");
-				comment1.put("value", "Mae esa pieza si es una mierda, jueputa sal!");
-				comment1.put("date", "29/10/15");
-				comments.add(comment1);
-
-				JSONObject comment2 = new JSONObject();
-				comment2.put("user", "LuisDiego123");
-				comment2.put("value", "Santi flamer...");
-				comment2.put("date", "31/10/15");
-				comments.add(comment2);
+				for (int i = 0; i < commentArray.size(); i++) {
+					JSONObject comment = new JSONObject();
+					comment.put("user", commentArray.get(i).get("user"));
+					comment.put("value", commentArray.get(i).get("comment"));
+					comments.add(comment);
+				}
 
 				response.put("comments", comments);
+				response.put("commentcount", comments.size());
 
 				return Response.status(200).entity(response.toJSONString()).header("Access-Control-Allow-Origin", "*")
 						.build();
+			} else if (data.compareTo("version") == 0) {
+				System.out.println("Reading version, " + _userID + "'s library!");
+
+				comunication com = new comunication();
+				com.open();
+				List<List<String>> versions = com.get_songs_versions(Integer.parseInt(songID));
+				com.close();
+
+				JSONArray result = new JSONArray();
+				for (int i = 0; i < versions.size(); i++) {
+					JSONObject song = new JSONObject();
+					song.put("title", versions.get(i).get(0));
+					song.put("artist", versions.get(i).get(1));
+					song.put("album", versions.get(i).get(2));
+					song.put("year", versions.get(i).get(3));
+					song.put("genre", versions.get(i).get(4));
+					song.put("lyrics", versions.get(i).get(5));
+					song.put("version", versions.get(i).get(6));
+					result.add(song);
+				}
+
+				return Response.status(200).entity(result.toJSONString()).header("Access-Control-Allow-Origin", "*")
+						.build();
+
+			} else {
+				return Response.status(404).header("Access-Control-Allow-Origin", "*").build();
 			}
+
 			/*
 			 * comunication.getInstance().open(); byte[] blob =
 			 * comunication.getInstance().retrieve_song("Pinga", "Imagina Penes"
@@ -414,6 +438,135 @@ public class LibrariesResource {
 			// " with id: " + songID + " for user: " + _userID).build();
 		}
 
+		/**
+		 * Updates a song inside a library.
+		 * 
+		 * @param songID
+		 * @return
+		 */
+		@PUT
+		@Path("{songID}")
+		@Consumes("application/json")
+		public Response updatingSongs(String content, @PathParam("songID") String songID,
+				@QueryParam("type") String type) {
+			try {
+				System.out.println("Updating song, " + songID + " inside, " + _userID + "'s library!");
+
+				if (type.compareTo("owner") == 0) {
+					Object obj = JSONValue.parse(content);
+					JSONObject json = (JSONObject) obj;
+
+					// User
+					String title = (String) json.get("title");
+					String artist = (String) json.get("artist");
+					String album = (String) json.get("album");
+					String year = (String) json.get("year");
+					String genre = (String) json.get("genre");
+					String lyrics = (String) json.get("lyrics");
+					String lib = (String) json.get("lib");
+					String id = (String) json.get("id"); // Local id
+
+					comunication com = new comunication();
+					com.open();
+					com.update_song_from_local(Integer.parseInt((String) id), _userID, title, artist, album, year,
+							genre, lyrics);
+					com.close();
+
+					return Response.status(200).build();
+				} else if (type.compareTo("friend") == 0) {
+
+					Object obj = JSONValue.parse(content);
+					JSONObject json = (JSONObject) obj;
+
+					// User
+					String title = (String) json.get("title");
+					String artist = (String) json.get("artist");
+					String album = (String) json.get("album");
+					String year = (String) json.get("year");
+					String genre = (String) json.get("genre");
+					String lyrics = (String) json.get("lyrics");
+
+					comunication com = new comunication();
+					com.open();
+					com.update_song(Integer.parseInt(songID), title, artist, album, year, genre, lyrics);
+					com.close();
+
+					return Response.status(200).build();
+
+				} else if (type.compareTo("version") == 0) {
+
+					Object obj = JSONValue.parse(content);
+					JSONObject json = (JSONObject) obj;
+					String version = (String) json.get("version");
+
+					comunication com = new comunication();
+					com.open();
+					com.set_version(Integer.parseInt(songID), Integer.parseInt(version));
+					com.close();
+
+					return Response.status(200).build();
+				} else if (type.compareTo("comment") == 0) {
+
+					Object obj = JSONValue.parse(content);
+					JSONObject json = (JSONObject) obj;
+					String comment = (String) json.get("comment");
+					String fromUser = (String) json.get("fromUser");
+					
+					MongoJDBC mongo = new MongoJDBC();
+					mongo.addComment(songID, fromUser, comment);
+					
+
+					return Response.status(200).build();
+				} 
+				else if (type.compareTo("like") == 0) {
+					MongoJDBC mongo = new MongoJDBC();
+					mongo.addLike(songID);
+					return Response.status(200).build();
+				}
+				else if (type.compareTo("dislike") == 0) {
+					MongoJDBC mongo = new MongoJDBC();
+					mongo.disLike(songID);
+					return Response.status(200).build();
+				} else {
+					
+					return Response.status(404).build();
+				}
+
+			} catch (Exception e) {
+				System.out.println("Error while updating song, " + songID);
+				System.out.println(e);
+				return Response.status(400).build();
+			}
+		}
+
+		/**
+		 * Deletes a song inside a library.
+		 * 
+		 * @param songID
+		 * @return
+		 */
+		@DELETE
+		@Path("{songID}")
+		@Consumes("application/json")
+		public Response deletingSongs(@PathParam("songID") String songID) {
+			try {
+				System.out.println("Deleting song, " + songID + " inside, " + _userID + "'s library!");
+				comunication com = new comunication();
+				com.open();
+				com.drop_song(Integer.parseInt(songID));
+				com.close();
+
+				MongoJDBC mongo = new MongoJDBC();
+				mongo.deleteSong(songID);
+
+				return Response.status(200).build();
+			} catch (Exception e) {
+				System.out.println("Error while deleting song, " + songID);
+				System.out.println(e);
+				return Response.status(400).build();
+			}
+		}
+
 		@GET
 		@Produces("audio/mp3")
 		@Path("{songID}/stream")
@@ -421,6 +574,9 @@ public class LibrariesResource {
 				throws Exception {
 
 			System.out.println("Streaming song " + songID + " inside " + _userID + "'s library!");
+			
+			
+			
 			comunication com = new comunication();
 			com.open();
 			byte[] blob = com.retrieve_song(Integer.parseInt(songID));
@@ -488,36 +644,5 @@ public class LibrariesResource {
 					.header(HttpHeaders.LAST_MODIFIED, new Date(asset.lastModified()));
 			return res.build();
 		}
-
-		/**
-		 * Updates a song inside a library.
-		 * 
-		 * @param songID
-		 * @return
-		 */
-		@PUT
-		@Path("{songID}")
-		@Consumes("application/json")
-		public Response updatingSongs(@PathParam("songID") String songID) {
-			return Response.status(200)
-					.entity("Updating song inside, " + _libraryID + " with id: " + songID + " for user: " + _userID)
-					.build();
-		}
-
-		/**
-		 * Deletes a song inside a library.
-		 * 
-		 * @param songID
-		 * @return
-		 */
-		@DELETE
-		@Path("{songID}")
-		@Consumes("application/json")
-		public Response deletingSongs(@PathParam("songID") String songID) {
-			return Response.status(200)
-					.entity("Deleting song inside, " + _libraryID + " with id: " + songID + " for user: " + _userID)
-					.build();
-		}
-
 	}
 }

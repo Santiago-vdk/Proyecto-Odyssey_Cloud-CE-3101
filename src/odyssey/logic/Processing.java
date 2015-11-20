@@ -3,9 +3,11 @@ package odyssey.logic;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.glassfish.jersey.internal.util.Base64;
+//import org.glassfish.jersey.internal.util.Base64;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 import odyssey.storage.comunication;
 
@@ -31,6 +33,16 @@ public class Processing {
 		return result;
 	}
 	
+	public boolean existsLocaly(JSONArray localArray, int globalID){
+		for(int i = 0; i < localArray.size(); i++){
+			JSONObject object = (JSONObject) localArray.get(i);
+			int localID = Integer.parseInt((String) object.get("id"));
+			if(localID == globalID){
+				return true; //Existe en la local y en la global
+			}
+		}
+		return false; //Existe en la global y no en la local
+	}
 	
 	/*
 	 * Recibe la metadata de la biblioteca local de un usuario Define que
@@ -49,9 +61,31 @@ public class Processing {
 		//Comunication instance
 		comunication com = new comunication();
 		
+		com.open();
+		List<Integer> globalArray = com.idslocal(pUsername);
+		com.close();
+		
+		for(int i = 0; i < globalArray.size(); i ++){
+			int globalID = globalArray.get(i);
+			
+			if(!existsLocaly(pSongsArray, globalID)){
+				//Se debe borrar
+				JSONObject procedure = new JSONObject();
+				procedure.put("method", "DELETE");
+				
+				com.open();
+				int idSong = com.getid(pUsername, globalID);
+				com.close();
+				
+				procedure.put("url", _serverPath + "users/" +  pUsername + "/libraries/1/songs/" + idSong);//Necesito id global de la cancion
+				result.add(procedure);
+			}
+		}
+		
+		
 		for (int i = 0; i < pSongsArray.size(); i++) {
 			JSONObject songJSON = (JSONObject) pSongsArray.get(i);
-			
+
 			com.open();
 			boolean exists = com.exist(pUsername, Integer.parseInt((String) songJSON.get("id")));
 			com.close();
@@ -78,10 +112,10 @@ public class Processing {
 					procedure.put("method", "PUT");
 					
 					com.open();
-					int idSong = com.getid(pUsername,(int) songJSON.get("id"));
+					int idSong = com.getid(pUsername,Integer.parseInt((String) songJSON.get("id")));
 					com.close();
 					
-					procedure.put("url", _serverPath + pUsername + "/1/songs/" + idSong);//Necesito id global de la cancion
+					procedure.put("url", _serverPath + "users/" +  pUsername + "/libraries/1/songs/" + idSong + "?type=owner");//Necesito id global de la cancion
 					result.add(procedure);
 				}
 				//No necesita actualizacion
@@ -113,9 +147,11 @@ public class Processing {
 		try {
 			
 			comunication com = new comunication();
+			System.out.println(pGlobalID);
 			com.open();
 			List<String> metadata = com.get_songs_lib2(Integer.parseInt(pGlobalID));
-			System.out.println(metadata.size());
+			com.close();
+			
 			result.put("title", metadata.get(0));
 			result.put("artist", metadata.get(1));
 			result.put("album", metadata.get(2));
@@ -123,13 +159,14 @@ public class Processing {
 			result.put("genre", metadata.get(4));
 			result.put("lyrics", metadata.get(5));
 			result.put("id", metadata.get(6));
-			com.close();
+			
 			
 			com.open();
-			byte[] encoded = com.retrieve_song(Integer.parseInt(pGlobalID));
+			byte[] blob = com.retrieve_song(Integer.parseInt(pGlobalID));
+			
 			com.close();
 			
-			result.put("blob", encoded);
+			result.put("blob", new String(Base64.encode(blob)));
 			
 			return result;
 		} catch (NullPointerException e){

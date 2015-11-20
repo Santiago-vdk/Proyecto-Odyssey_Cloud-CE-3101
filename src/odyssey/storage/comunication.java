@@ -125,10 +125,10 @@ public class comunication {
 	
 	
 	//despliega todas las canciones de la libreria de un usuario
-	public List<List<String>> get_songs_lib(String User,String Lib) throws SQLException{
-		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib(?,?) }");
+	public List<List<String>> get_songs_lib(String User) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib2(?) }");
 		proc_stmt.setString(1, User);
-		proc_stmt.setString(2, Lib);
+		
 		ResultSet rs = proc_stmt.executeQuery();
 		List<List<String>> tmp = new ArrayList<List<String>>();
 		while (rs.next()) {
@@ -143,7 +143,6 @@ public class comunication {
 			tmp.add(tmp2);
 		}
 		return tmp;
-		
 	}
 	
 	//Inserta una nueva cancion
@@ -216,6 +215,7 @@ public class comunication {
 			tmp2.add(rs.getString("Song_Year"));
 			tmp2.add(rs.getString("Song_Gen"));
 			tmp2.add(rs.getString("Lyrics"));
+			tmp2.add(rs.getString("Song_Version"));
 			tmp.add(tmp2);
 		}
 		return tmp;
@@ -303,7 +303,7 @@ public class comunication {
 	}
 	
 	public List<String> get_songs_lib2(int id) throws SQLException{
-		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib2(?) }");
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib(?) }");
 		proc_stmt.setInt(1,id);
 		ResultSet rs = proc_stmt.executeQuery();
 		List<String> tmp2 = new ArrayList<String>();
@@ -336,5 +336,52 @@ public class comunication {
 		pinga.close();
 		
 	}
-
+	
+	public List<Integer> idslocal(String User) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songID_ids (?) }");
+		proc_stmt.setString(1,User);
+		ResultSet rs = proc_stmt.executeQuery();
+		List<Integer> tmp = new ArrayList<Integer>();
+		while (rs.next()) {
+			tmp.add(rs.getInt("LocalID"));
+		}
+		return tmp;
+	}
+	
+	public void drop_song(int id) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call drop_song(?) }");
+		proc_stmt.setInt(1,id);
+		proc_stmt.executeUpdate();
+	}
+	
+	public List<Integer> finder(String word) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call finder(?) }");
+		proc_stmt.setString(1,word);
+		ResultSet rs = proc_stmt.executeQuery();
+		List<Integer> tmp = new ArrayList<Integer>();
+		while (rs.next()) {
+			tmp.add(rs.getInt("Song_ID"));
+		}
+		return tmp;
+	}
+	
+/*	public List<String> get_songs_lib(int id) throws SQLException{
+		CallableStatement proc_stmt = connection.prepareCall("{ call get_songs_lib(?) }");
+		proc_stmt.setInt(1, id);
+		ResultSet rs = proc_stmt.executeQuery();
+		List<String> tmp = new ArrayList<String>();
+		while (rs.next()) {
+			tmp.add(rs.getString("Song_ID"));
+			tmp.add(rs.getString("Song_Name"));
+			tmp.add(rs.getString("Song_Artist"));
+			tmp.add(rs.getString("Song_Album"));
+			tmp.add(rs.getString("Song_Year"));
+			tmp.add(rs.getString("Song_Gen"));
+			tmp.add(rs.getString("Lyrics"));
+			
+		}
+		return tmp;
+		
+	}
+*/
 }
