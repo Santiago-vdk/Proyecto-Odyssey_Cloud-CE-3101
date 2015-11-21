@@ -31,6 +31,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -69,42 +70,99 @@ public class LoginResource {
 		// User
 		String username = (String) json.get("username");
 		String password = (String) json.get("password");
-		
-		//Comunication instance
+
+		// Comunication instance
 		comunication com = new comunication();
 
-		// Debe devolver false si existe el usuario
 		com.open();
-		boolean exists_user = com.validate_user_nick(username);
+		boolean isAdmin = com.valiadmin(username);
 		com.close();
 
-		// Debe devolver true si las credenciales son correctas
-		com.open();
-		boolean password_correct = com.compare_pass(username, password);
-		com.close();
+		if (isAdmin) {
+			// Debe devolver false si existe el usuario
+			com.open();
+			boolean exists_user = com.validate_user_nick(username);
+			com.close();
 
-		if (!exists_user && password_correct) {
-			// Usuario autenticado, reviso que no haya una sesion activa para ese usuario
-			SessionNode session = Sessions.getInstance().findByUsername(username);
-			if(session == null){
-				//Sesion para ese usuario no existe
-				System.out.println("SERVER: User, " + username + " connecting!");
-				String time = new Timestamp(System.currentTimeMillis()).toString();
-				String toHash = password + time;
-				String hashed = BCrypt.hashpw(toHash, BCrypt.gensalt());
-				Sessions.getInstance().createSession(username, hashed, time);		
-				
-				JSONObject jsontoken = new JSONObject();
-				jsontoken.put("token", hashed);
+			// Debe devolver true si las credenciales son correctas
+			com.open();
+			boolean password_correct = com.compare_pass(username, password);
+			com.close();
 
-				return Response.status(200).entity(jsontoken.toJSONString()).build();
+			if (!exists_user && password_correct) {
+				// Usuario autenticado, reviso que no haya una sesion activa
+				// para ese usuario
+				SessionNode session = Sessions.getInstance().findByUsername(username);
+				if (session == null) {
+					// Sesion para ese usuario no existe
+					System.out.println("SERVER ADMIN: " + username + " connecting!");
+					String time = new Timestamp(System.currentTimeMillis()).toString();
+					String toHash = password + time;
+					String hashed = BCrypt.hashpw(toHash, BCrypt.gensalt());
+					Sessions.getInstance().createSession(username, hashed, time, "");
+
+					JSONObject jsontoken = new JSONObject();
+					jsontoken.put("token", hashed);
+					jsontoken.put("admin", true);
+
+					return Response.status(200).entity(jsontoken.toJSONString()).build();
+				} else {
+					return Response.status(403).build();
+				}
+
+			} else {
+				return Response.status(401).build();
 			}
-			else {
-				return Response.status(403).build();
-			}
-			
 		} else {
-			return Response.status(401).build();
+
+			// Debe devolver false si existe el usuario
+			com.open();
+			boolean exists_user = com.validate_user_nick(username);
+			com.close();
+
+			// Debe devolver true si las credenciales son correctas
+			com.open();
+			boolean password_correct = com.compare_pass(username, password);
+			com.close();
+
+			if (!exists_user && password_correct) {
+				// Usuario autenticado, reviso que no haya una sesion activa
+				// para ese usuario
+				SessionNode session = Sessions.getInstance().findByUsername(username);
+				if (session == null) {
+					// Sesion para ese usuario no existe
+					System.out.println("SERVER: User, " + username + " connecting!");
+					String time = new Timestamp(System.currentTimeMillis()).toString();
+					String toHash = password + time;
+					String hashed = BCrypt.hashpw(toHash, BCrypt.gensalt());
+					Sessions.getInstance().createSession(username, hashed, time, "");
+
+					JSONObject jsontoken = new JSONObject();
+					jsontoken.put("token", hashed);
+
+					return Response.status(200).entity(jsontoken.toJSONString()).build();
+				} else {
+					return Response.status(403).build();
+				}
+
+			} else {
+				return Response.status(401).build();
+			}
 		}
 	}
+
+	@GET
+	@Path("token")
+	@Produces("application/json")
+	public Response checkToken(String content, @QueryParam("token") String token) {
+		SessionNode session = Sessions.getInstance().find(token);
+		if (session == null) {
+			// La sesion no existe
+			return Response.status(204).build();
+		} else {
+			// El token si existe
+			return Response.status(200).build();
+		}
+	}
+
 }

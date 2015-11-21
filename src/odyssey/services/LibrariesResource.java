@@ -17,6 +17,8 @@ import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.sun.org.apache.xpath.internal.SourceTree;
 
 import odyssey.logic.Processing;
+import odyssey.logic.SessionNode;
+import odyssey.logic.Sessions;
 import odyssey.storage.MongoJDBC;
 import odyssey.storage.comunication;
 
@@ -294,6 +296,8 @@ public class LibrariesResource {
 
 				Object obj = JSONValue.parse(content);
 				JSONObject json = (JSONObject) obj;
+				
+				
 
 				// User
 				String title = (String) json.get("title");
@@ -305,6 +309,10 @@ public class LibrariesResource {
 				String lib = (String) json.get("lib");
 				String id = (String) json.get("id"); // Local id
 				String blob = (String) json.get("blob");
+				
+				System.out.println("Posting!");
+				System.out.println(title);
+				System.out.println(id);
 
 				byte[] blobData = Base64.decode(blob);
 
@@ -376,6 +384,7 @@ public class LibrariesResource {
 				response.put("year", metadata.get(3));
 				response.put("genre", metadata.get(4));
 				response.put("lyrics", metadata.get(5));
+				response.put("likes", mongo.getLikes(songID));
 
 				ArrayList<JSONObject> commentArray = mongo.getComments(songID);
 				System.out.println(commentArray.size());
@@ -456,6 +465,7 @@ public class LibrariesResource {
 					Object obj = JSONValue.parse(content);
 					JSONObject json = (JSONObject) obj;
 
+					
 					// User
 					String title = (String) json.get("title");
 					String artist = (String) json.get("artist");
@@ -465,6 +475,11 @@ public class LibrariesResource {
 					String lyrics = (String) json.get("lyrics");
 					String lib = (String) json.get("lib");
 					String id = (String) json.get("id"); // Local id
+					
+					System.out.println("Updating!");
+					System.out.println(title);
+					System.out.println(id);
+					
 
 					comunication com = new comunication();
 					com.open();
@@ -511,24 +526,21 @@ public class LibrariesResource {
 					JSONObject json = (JSONObject) obj;
 					String comment = (String) json.get("comment");
 					String fromUser = (String) json.get("fromUser");
-					
+
 					MongoJDBC mongo = new MongoJDBC();
 					mongo.addComment(songID, fromUser, comment);
-					
 
 					return Response.status(200).build();
-				} 
-				else if (type.compareTo("like") == 0) {
+				} else if (type.compareTo("like") == 0) {
 					MongoJDBC mongo = new MongoJDBC();
-					mongo.addLike(songID);
+					mongo.addLike(songID,_userID);
 					return Response.status(200).build();
-				}
-				else if (type.compareTo("dislike") == 0) {
+				} else if (type.compareTo("dislike") == 0) {
 					MongoJDBC mongo = new MongoJDBC();
-					mongo.disLike(songID);
+					mongo.disLike(songID,_userID);
 					return Response.status(200).build();
 				} else {
-					
+
 					return Response.status(404).build();
 				}
 
@@ -549,6 +561,7 @@ public class LibrariesResource {
 		@Path("{songID}")
 		@Consumes("application/json")
 		public Response deletingSongs(@PathParam("songID") String songID) {
+
 			try {
 				System.out.println("Deleting song, " + songID + " inside, " + _userID + "'s library!");
 				comunication com = new comunication();
@@ -570,26 +583,36 @@ public class LibrariesResource {
 		@GET
 		@Produces("audio/mp3")
 		@Path("{songID}/stream")
-		public Response streamAudio(@PathParam("songID") String songID, @HeaderParam("Range") String range)
-				throws Exception {
+		public Response streamAudio(@PathParam("songID") String songID, @HeaderParam("Range") String range,
+				@QueryParam("for") String playFor) throws Exception {
+			try {
+				System.out.println("Streaming song " + songID + " inside " + _userID + "'s library! to " + playFor);
 
-			System.out.println("Streaming song " + songID + " inside " + _userID + "'s library!");
-			
-			
-			
-			comunication com = new comunication();
-			com.open();
-			byte[] blob = com.retrieve_song(Integer.parseInt(songID));
-			com.close();
+				SessionNode session = Sessions.getInstance().findByUsername(playFor);
+				System.out.println(session.getSession());
+				
+				//El usuario no esta escuchando esa pieza
+				if (session.getSession().getListeningTo().compareTo(songID) != 0) {
+					System.out.println("1");
+					session.getSession().setListeningTo(songID);
+					session.getSession().loadSongForStream(_userID, songID);
+					File audio = session.getSession().getListeningPath();
+					return buildStream(audio, range);
+				}
+				else {
+					System.out.println("2");
+					File audio = session.getSession().getListeningPath();
+					return buildStream(audio, range);
+				}
+				
+				
 
-			FileOutputStream fos = null;
-			fos = new FileOutputStream("C:\\Eclipse Servers\\usr\\servers\\OddyseyServer\\tmp" + _userID + ".mp3");
-			fos.write(blob);
-			fos.close();
-
-			File audio = new File("C:\\Eclipse Servers\\usr\\servers\\OddyseyServer\\tmp" + _userID + ".mp3");
-
-			return buildStream(audio, range);
+				
+			} catch (Exception e) {
+				System.out.println("Fuck m8...");
+				System.out.println(e);
+				return Response.status(404).build();
+			}
 		}
 
 		private Response buildStream(final File asset, final String range) throws Exception {

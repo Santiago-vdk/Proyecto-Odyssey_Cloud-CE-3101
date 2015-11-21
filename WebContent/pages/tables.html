@@ -1,0 +1,119 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Bootstrap Core CSS -->
+<link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	
+
+<style>
+.wrapper {
+	padding: 25px;
+}
+</style>
+
+<script>
+
+function sendQuery(query) {
+	window.location = "#/sqlquery/" + query;
+	/*var postData = {
+			"username":sessionStorage.username,
+			"token":sessionStorage.token
+	}
+	$.ajax({
+		type : 'POST',
+		url : "http://192.168.1.135:9080/OdysseyCloud/"
+				+ 'api/v1/tools/query/?query=' + query,
+		contentType : 'application/json; charset=utf-8',
+		data : JSON.stringify(postData),
+		dataType : 'json',
+		success : function(data, textStatus, jqXHR) {
+			
+			updateDataTable(data);
+		},
+		error : function(jqXHR, exception) {
+		}
+	}); */
+};
+
+
+function selectUsers(){
+	console.log("Select Users");
+	sendQuery("~Users");
+}
+function selectAdmins(){
+	console.log("Select Admins");
+	sendQuery("~Admins");
+}
+function selectLibraries(){
+	console.log("Select Libraries");
+	sendQuery("~Librarys");
+}
+function selectSongs_Libraries(){
+	console.log("Select Songs_Libraries");
+	sendQuery("~Songs_Library");
+}
+function selectSongs_Metadata(){
+	console.log("Select Songs_Metadata");
+	sendQuery("~Songs_Metadata");
+}
+function selectSong_DATA(){
+	console.log("Select Song_DATA");
+	sendQuery("~Songs_Data");
+}
+function selectSong_Versions(){
+	console.log("Select Song_Versions");
+	sendQuery("~Song_Versions");
+}
+
+</script>
+
+<body>
+	<div class="wrapper">
+		<div class="jumbotron">
+			<h1>Choose a table to view</h1>
+		</div>
+
+
+		<div class="btn-group btn-group-justified" role="group"
+			aria-label="...">
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectUsers()" class="btn btn-warning">Users</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectAdmins()" class="btn btn-danger">Admins</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectLibraries()" class="btn btn-default">Libraries</button>
+			</div>
+		</div>
+
+		<br>
+
+		<div class="btn-group btn-group-justified" role="group"
+			aria-label="...">
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectSongs_Libraries()" class="btn btn-default">Songs_Libraries</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectSongs_Metadata()" class="btn btn-default">Songs_Metadata</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectSong_DATA()" class="btn btn-default">Song_DATA</button>
+			</div>
+		</div>
+
+		<br>
+
+		<div class="btn-group btn-group-justified" role="group"
+			aria-label="...">
+			<div class="btn-group" role="group">
+				<button type="button" onclick="selectSong_Versions()" class="btn btn-default">Song_Versions</button>
+			</div>
+
+		</div>
+
+
+	</div>
+</body>
+
+</html>

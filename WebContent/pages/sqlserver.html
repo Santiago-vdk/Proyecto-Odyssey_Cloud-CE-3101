@@ -1,18 +1,30 @@
 <html>
 
 
-        <!-- CodeMirror -->
-        <script src="../dist/js/codemirror.js"></script>
-        <link rel="stylesheet" href="../dist/css/codemirror.css">
-        <link rel="stylesheet" href="../dist/css/base16-light.css">
-        <link rel="stylesheet" href="../dist/css/show-hint.css" />
-        <script src="../dist/js/sql.js"></script>
-        <script src="../dist/js/show-hint.js"></script>
-        <script src="../dist/js/sql-hint.js"></script>
-        <script src="../dist/js/panel.js"></script>
+<!-- CodeMirror -->
+<script src="../dist/js/codemirror.js"></script>
+<link rel="stylesheet" href="../dist/css/codemirror.css">
+<link rel="stylesheet" href="../dist/css/base16-light.css">
+<link rel="stylesheet" href="../dist/css/show-hint.css" />
+<script src="../dist/js/sql.js"></script>
+<script src="../dist/js/show-hint.js"></script>
+<script src="../dist/js/sql-hint.js"></script>
+<script src="../dist/js/panel.js"></script>
 
 
-<script>
+
+
+<style>
+</style>
+<body>
+	<div id="query"
+		style="height: 500px; border: 1px solid black;; margin: 5px;"></div>
+	<br>
+	<button type="button" onclick="sendQuery()" class="btn btn-success">Run
+		query</button>
+
+
+	<script>
 var editor;
 
 
@@ -31,19 +43,31 @@ var editor;
     });
 
 
-function getCode() {
-    return editor.getValue();
+function sendQuery() {
+	console.log(editor.getValue());
+	
+	var postData = {
+			"username":sessionStorage.username,
+			"token":sessionStorage.token
+	}
+	
+	$.ajax({
+		type : 'POST',
+		url : "http://192.168.1.135:9080/OdysseyCloud/"
+				+ 'api/v1/tools/query/?query=' + editor.getValue(),
+		contentType : 'application/json; charset=utf-8',
+		data : JSON.stringify(postData),
+		dataType : 'json',
+		success : function(data, textStatus, jqXHR) {
+			alert(data.result);
+		},
+		error : function(jqXHR, exception) {
+		}
+	}); 
 };
 
 </script>
 
-<style>
-
-</style>
-<body>
-<div id="query" style="height:500px;border: 1px solid black;;margin:5px;"></div>
-<br>
-<button type="button" class="btn btn-success">Run query</button>
 </body>
 
 </html>

@@ -105,7 +105,7 @@ public class UsersResource {
 			// Insercion MongoDB
 			MongoJDBC mongo = new MongoJDBC();
 			 
-			mongo.addUser(username, "null");
+			mongo.addUser(username, "");
 			
 
 			return Response.status(201).build();
@@ -134,7 +134,7 @@ public class UsersResource {
 			
 			MongoJDBC mongo = new MongoJDBC();
 			ArrayList<String> friends = mongo.getFriends(session.getUser());
-			System.out.println(friends.size());
+			
 			
 			for(int i = 0; i < friends.size(); i++){
 				JSONObject friend = new JSONObject();
@@ -169,10 +169,30 @@ public class UsersResource {
 			List<String> friends = mongo.getFriends(userID);
 			for(int i = 0; i < friends.size(); i++){
 				if(friends.get(i).compareTo(with) == 0){
-					return Response.status(302).header("Access-Control-Allow-Origin", "*").build();
+					System.out.println(userID + " is friends with: " + with);
+					JSONObject json = new JSONObject();
+					json.put("friends", true);
+					return Response.status(200).entity(json.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
 				}
 			}
-			return Response.status(404).header("Access-Control-Allow-Origin", "*").build();
+			JSONObject json = new JSONObject();
+			json.put("friends", false);
+			return Response.status(200).entity(json.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+		
+			
+		}
+		else if (type.compareTo("friendlist") == 0) {
+			MongoJDBC mongo = new MongoJDBC();
+			List<String> friends = mongo.getFriends(userID);
+			JSONArray result = new JSONArray();
+			for(int i = 0; i < friends.size(); i++){
+				result.add(friends.get(i));
+			}
+			JSONObject json = new JSONObject();
+			json.put("friends", result);
+			return Response.status(200).entity(json.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+		
+			
 		}
 		else if (type.compareTo("profile") == 0) {
 			

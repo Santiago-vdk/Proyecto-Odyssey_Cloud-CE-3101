@@ -331,8 +331,7 @@ public class comunication {
 		
 		comunication pinga = new comunication();
 		pinga.open();
-		byte[] data = "asdfasdfasdfasdfasdf".getBytes();
-		pinga.insert_song("santi2", "1", "pinga", "fafa", "cancer", "213", "caca", "gayu ay", data, 1);
+		//pinga.getallusers();
 		pinga.close();
 		
 	}
@@ -384,4 +383,181 @@ public class comunication {
 		
 	}
 */
+	
+	
+	public boolean valiadmin(String User) throws SQLException{
+		Statement stmt = connection.createStatement();
+		boolean status = stmt.execute("Select * From Admins");
+		boolean flag= false;
+		ResultSet rs = stmt.getResultSet();
+        while(rs.next()){
+        	if (rs.getString("Users_Name").equals(User)){
+        		flag=true;
+        	}
+        }
+        rs.close();
+        return flag;
+	}
+	
+	public List<String> getallusers() throws SQLException{
+		Statement stmt = connection.createStatement();
+		boolean status = stmt.execute("Select * From Users");
+		List<String> tmp = new ArrayList<String>();
+		ResultSet rs = stmt.getResultSet();
+        while(rs.next()){
+        	tmp.add(rs.getString("Users_Name"));
+        	
+        }
+        rs.close();
+        return tmp;
+	}
+	
+	public List<List<String>> vertablas(String tabla) throws SQLException{
+		Statement stmt = connection.createStatement();
+		List<List<String>> tmp = new ArrayList<List<String>>();
+		if (tabla.equals("Users")){
+			boolean status = stmt.execute("Select * From Users");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("Users_Name");
+			tmp2.add("Users_Password");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(rs.getString("Users_Name"));
+           	 	tmp3.add(rs.getString("Users_Password"));
+           	 	tmp.add(tmp3);
+            }
+            rs.close();
+		}
+		else if (tabla.equals("Admins")){
+			boolean status = stmt.execute("Select * From Admins");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("Users_Name");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(rs.getString("Users_Name"));
+           	 	tmp.add(tmp3);
+            }
+            rs.close();
+		}
+		else if (tabla.equals("Librarys")){
+			boolean status = stmt.execute("Select * From Librarys");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("ID_Lib");
+			tmp2.add("Lib_Name");
+			tmp2.add("Users_Name");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(Integer.toString(rs.getInt("ID_Lib")));
+           	 	tmp3.add(rs.getString("Lib_Name"));
+           	    tmp3.add(rs.getString("Users_Name"));
+           	    tmp.add(tmp3);
+            }
+            rs.close();
+		}
+		else if (tabla.equals("Songs_Library")){
+			boolean status = stmt.execute("Select * From Songs_Library");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("ID_Lib");
+			tmp2.add("Song_ID");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(Integer.toString(rs.getInt("ID_Lib")));
+           	 	tmp3.add(Integer.toString(rs.getInt("Song_ID")));
+           	 	tmp.add(tmp3);
+            }
+            rs.close();
+		}
+		else if (tabla.equals("Songs_Metadata")){
+			boolean status = stmt.execute("Select * From Songs_Metadata");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("Song_ID");
+			tmp2.add("Users_Name");
+			tmp2.add("Song_Name");
+			tmp2.add("Song_Artist");
+			tmp2.add("Song_Album");
+			tmp2.add("Song_Year");
+			tmp2.add("Song_Gen");
+			tmp2.add("Lyrics");
+			tmp2.add("LocalID");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(Integer.toString(rs.getInt("Song_ID")));
+           	 	tmp3.add(rs.getString("Users_Name"));
+           	 	tmp3.add(rs.getString("Song_Name"));
+           	 	tmp3.add(rs.getString("Song_Artist"));
+           	 	tmp3.add(rs.getString("Song_Album"));
+           	 	tmp3.add(rs.getString("Song_Year"));
+           	 	tmp3.add(rs.getString("Song_Gen"));
+           	 	tmp3.add(rs.getString("Lyrics"));
+           	 	tmp3.add(Integer.toString(rs.getInt("LocalID")));
+           	 	tmp.add(tmp3);
+            }
+            rs.close();
+			
+		}
+		else if (tabla.equals("Songs_Data")){
+			boolean status = stmt.execute("Select * From Songs_Data");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("Song_ID");
+			tmp2.add("Data");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(Integer.toString(rs.getInt("Song_ID")));
+           	 	tmp3.add(rs.getBytes("Data").toString());
+           	 	tmp.add(tmp3);
+            }
+            rs.close();
+		}
+		else if (tabla.equals("Song_Versions")){
+			boolean status = stmt.execute("Select * From Song_Versions");
+			List<String> tmp2 = new ArrayList<String>();
+			tmp2.add("Song_ID");
+			tmp2.add("Song_Name");
+			tmp2.add("Song_Artist");
+			tmp2.add("Song_Album");
+			tmp2.add("Song_Year");
+			tmp2.add("Song_Gen");
+			tmp2.add("Lyrics");
+			tmp2.add("Song_Version");
+			tmp.add(tmp2);
+		    ResultSet rs = stmt.getResultSet();
+            while(rs.next()){
+            	List<String> tmp3 = new ArrayList<String>();
+           	 	tmp3.add(Integer.toString(rs.getInt("Song_ID")));
+           	 	tmp3.add(rs.getString("Song_Name"));
+           	 	tmp3.add(rs.getString("Song_Artist"));
+           	 	tmp3.add(rs.getString("Song_Album"));
+           	 	tmp3.add(rs.getString("Song_Year"));
+           	 	tmp3.add(rs.getString("Song_Gen"));
+           	 	tmp3.add(rs.getString("Lyrics"));
+           	 	tmp3.add(Integer.toString(rs.getInt("Song_Version")));
+           	 	tmp.add(tmp3);
+            }
+            rs.close();
+		}
+	
+		return tmp;
+	}
+	
+	public void query(String query) throws SQLException{
+		Statement stmt = connection.createStatement();
+		boolean status = stmt.execute(query);
+             int count = stmt.getUpdateCount();
+             System.out.println("Total records updated: "+count);
+         
+	}
+	
+	
 }

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+
+
+
+
+
+</head>
+
+<script>
+	function saveChanges(rkt) {
+
+		var title = $(rkt).closest('tr').find('.title').text();
+		var artist = $(rkt).closest('tr').find('.artist').text();
+		var album = $(rkt).closest('tr').find('.album').text();
+		var year = $(rkt).closest('tr').find('.year').text();
+		var genre = $(rkt).closest('tr').find('.genre').text();
+		var id = $(rkt).closest('tr').find('.id').text();
+		var lyrics = $(rkt).closest('tr').find('.lyrics').text();
+
+		var json = {
+			"title" : title,
+			"artist" : artist,
+			"album" : album,
+			"year" : year,
+			"genre" : genre,
+			"id" : id,
+			"lyrics" : lyrics
+		}
+
+		$.ajax({
+			type : 'PUT',
+			url : "http://192.168.1.135:9080/OdysseyCloud/" + 'api/v1/users/'
+					+ sessionStorage.tempUSER + "/libraries/1/songs/" + id
+					+ "?type=friend",
+			data : JSON.stringify(json),
+			contentType : 'application/json; charset=utf-8',
+			success : function(data, textStatus, jqXHR) {
+				alert("Song updated");
+			},
+			error : function(jqXHR, exception) {
+
+			}
+		});
+	}
+</script>
+<body>
+	<div class="wrapper" ng-controller="ProfileCtrl">
+		<h1>Perfil de: {{profileid}}</h1>
+		<table id="example" class="table table-striped table-bordered"
+			cellspacing="0" width="100%">
+
+			<tr>
+				<th>Title</th>
+				<th>Artist</th>
+				<th>Album</th>
+				<th>Year</th>
+				<th>Genre</th>
+				<th>ID</th>
+				<th>Lyrics</th>
+				<th>Listen</th>
+				<th></th>
+			</tr>
+			<tr ng-repeat="x in data.songs">
+				<td contenteditable="true" class="title">{{x.title}}</td>
+				<td contenteditable="true" class="artist">{{x.artist}}</td>
+				<td contenteditable="true" class="album">{{x.album}}</td>
+				<td contenteditable="true" class="year">{{x.year}}</td>
+				<td contenteditable="true" class="genre">{{x.genre}}</td>
+				<td contenteditable="false" class="id">{{x.id}}</td>
+				<td contenteditable="true" class="lyrics">{{x.lyrics}}</td>
+				<td><a href="" ng-click="playTrack(x.id);"><i
+						class="fa fa-play"></i></a></td>
+				<td><a class="btn btn-success btn-xs" href=""
+					onclick="saveChanges(this)">Save</a></td>
+			</tr>
+
+
+
+
+		</table>
+
+		<audio id="music-player" type="audio/mpeg" preload="auto"></audio>
+
+	</div>
+</body>
+</html>

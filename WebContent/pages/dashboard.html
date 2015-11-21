@@ -25,21 +25,21 @@
 <script src="../js/morris-data.js"></script>
 
 <style>
-img{    width: 25px;
-    height: 25px;
-    max-width: 25px;
-    max-height: 25px;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.5);}
-
-.scroll{
-	   max-height:500px;
-    overflow-y:scroll;
+img {
+	width: 25px;
+	height: 25px;
+	max-width: 25px;
+	max-height: 25px;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+	border: 3px solid rgba(255, 255, 255, 0.5);
 }
 
-
+.scroll {
+	max-height: 500px;
+	overflow-y: scroll;
+}
 </style>
 
 </head>
@@ -53,275 +53,78 @@ img{    width: 25px;
 
 	<div class="row">
 		<div class="col-lg-4">
-				<!-- TOP LOVED USERS -->
+			<!-- TOP LOVED USERS -->
 			<div class="panel panel-default scroll">
 				<div class="panel-heading">
 					<i class="fa fa-star-o fa-fw"></i> Top 100 LOVED Users
-				
+
 				</div>
 				<!-- /.panel-heading -->
-				<div class="panel-body">
+				<div class="panel-body" ng-controller="LovedCtrl">
 					<!--  <div id="morris-area-chart"></div> -->
 					<ul class="list-group">
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
+						<li class="list-group-item" ng-repeat="x in lovedUsers">{{x}}</li>
+
 					</ul>
 				</div>
 				<!-- /.panel-body -->
 			</div>
-			
-			
+
+
 			<!-- TOP LOVED SONGS -->
 			<div class="panel panel-default scroll">
 				<div class="panel-heading">
 					<i class="fa fa-music fa-fw"></i> Top 100 LOVED Songs
-				
+
 				</div>
 				<!-- /.panel-heading -->
-				<div class="panel-body">
+				<div class="panel-body" ng-controller="LovedSongsCtrl">
 					<!--  <div id="morris-area-chart"></div> -->
 					<ul class="list-group">
-							<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
+						<li class="list-group-item" ng-repeat="x in lovedSongs">{{x}}</li>
 					</ul>
 				</div>
 				<!-- /.panel-body -->
 			</div>
-			
-			
+
+
 		</div>
-		<script>
-		/*$("#hated").click(function () {
-	        console.log("clicked");
-	        var toggleHeight;
-	        if ($('#hated').height() > 400) {
-	            toggleHeight1 = "350px";
-	            toggleHeight2 = "120px";
-	            $('#hated').animate({height: toggleHeight1}, 600);
-	            $('#hated2').animate({height: toggleHeight2}, 600);
-	            $(".scroll").css("max-height", "120px");
-	        }
-	        else{
-	        	
-	        }
-	        
-		});*/
-		
-		</script>
-		
-			<div class="col-lg-4" id="hated">
-			
+
+
+		<div class="col-lg-4" id="hated">
+
 			<!-- TOP HATED USERS -->
-			<div class="panel panel-default" >
+			<div class="panel panel-default scroll">
 				<div class="panel-heading">
 					<i class="fa fa-frown-o fa-fw"></i> Top 10 HATED Users
-					
+
 				</div>
 				<!-- /.panel-heading -->
-				<div class="panel-body" id="hated2">
+				<div class="panel-body" ng-controller="HatedCtrl">
 					<!--  <div id="morris-area-chart"></div> -->
-					<ul class="list-group scroll">
-					<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="x in hatedUsers">{{x}}</li>
 					</ul>
 				</div>
 				<!-- /.panel-body -->
 			</div>
-			
-			
+
+
 			<!-- TOP HATED SONGS -->
 			<div class="panel panel-default scroll">
 				<div class="panel-heading">
 					<i class="fa fa-thumbs-o-down fa-fw"></i> Top 100 HATED Songs
-					
-					
-					<!--  
-					<div class="pull-right">
-						<div class="btn-group">
-							<button type="button"
-								class="btn btn-default btn-xs dropdown-toggle"
-								data-toggle="dropdown">
-								Actions <span class="caret"></span>
-							</button>
-							<ul class="dropdown-menu pull-right" role="menu">
-								<li><a href="#">Action</a></li>
-								<li><a href="#">Another action</a></li>
-								<li><a href="#">Something else here</a></li>
-								<li class="divider"></li>
-								<li><a href="#">Separated link</a></li>
-							</ul>
-						</div>
-					</div>-->
 				</div>
 				<!-- /.panel-heading -->
-				<div class="panel-body">
+				<div class="panel-body" ng-controller="HatedSongsCtrl">
 					<!--  <div id="morris-area-chart"></div> -->
 					<ul class="list-group">
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-							<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
-						<li class="list-group-item">Dapibus ac facilisis in</li>
-						<li class="list-group-item">Morbi leo risus</li>
-						<li class="list-group-item">Porta ac consectetur ac</li>
-						<li class="list-group-item">Vestibulum at eros</li>
-						<li class="list-group-item">Cras justo odio</li>
+						<li class="list-group-item" ng-repeat="x in hatedSongs">{{x}}</li>
 					</ul>
 				</div>
 				<!-- /.panel-body -->
 			</div>
-			
+
 		</div>
 
 
@@ -334,43 +137,44 @@ img{    width: 25px;
 					<i class="fa fa-user fa-fw"></i> Online Users
 				</div>
 				<!-- /.panel-heading -->
-				<div class="panel-body">
+				<div class="panel-body" ng-controller="OnlineUsersCtrl">
 					<div class="list-group">
-						<a href="#" class="list-group-item"><img src="http://api.adorable.io/avatars/285/abott@adorable.io.png"> Santiago<span
-							class="pull-right text-muted small"><em>4 minutes ago</em>
-						</span>
-						</a> 
-						<a href="#" class="list-group-item"><img src="http://api.adorable.io/avatars/285/abott@adorable.io.png">
-						  Casimiro <span
-							class="pull-right text-muted small"><em>12 minutes ago</em> </span>
-						</a>
-						<a href="#" class="list-group-item"><img src="http://api.adorable.io/avatars/285/abott@adorable.io.png">
-						  Casimiro <span
-							class="pull-right text-muted small"><em>12 minutes ago</em> </span>
-						</a>
-						<a href="#" class="list-group-item"><img src="http://api.adorable.io/avatars/285/abott@adorable.io.png">
-						  Casimiro <span
-							class="pull-right text-muted small"><em>12 minutes ago</em> </span>
-						</a>
-						<a href="#" class="list-group-item"><img src="http://api.adorable.io/avatars/285/abott@adorable.io.png">
-						  Casimiro <span
-							class="pull-right text-muted small"><em>12 minutes ago</em> </span>
-						</a>
-						<a href="#" class="list-group-item"><img src="http://api.adorable.io/avatars/285/abott@adorable.io.png">
-						  Casimiro <span
-							class="pull-right text-muted small"><em>12 minutes ago</em> </span>
-						</a>
+					
+						<a href="" class="list-group-item" ng-repeat="x in onlineUsers"><img ng-src="{{ 'http://api.adorable.io/avatars/285/' + x}}">
+							{{x}}<span class="pull-right text-muted small"><em>a while ago</em> </span> </a> 
+							
+					
 					</div>
 					<!-- /.list-group 
 					<a href="#" class="btn btn-default btn-block">View All Alerts</a>-->
 				</div>
 				<!-- /.panel-body -->
 			</div>
-			
-			
-			
-			
+
+
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<i class="fa fa-user fa-fw"></i> Users
+				</div>
+				<!-- /.panel-heading -->
+				<div class="panel-body" ng-controller="AllUsersCtrl">
+					<div class="list-group">
+					
+						<a href="#/profile/{{x}}" class="list-group-item" ng-repeat="x in allUsers"><img ng-src="{{ 'http://api.adorable.io/avatars/285/' + x}}">
+							{{x}}<span class="pull-right text-muted small"> </span> </a> 
+							
+					
+					</div>
+					<!-- /.list-group 
+					<a href="#" class="btn btn-default btn-block">View All Alerts</a>-->
+				</div>
+				<!-- /.panel-body -->
+			</div>
+
+
+
 			<!-- RECENTLY -->
+			<!--  
 			<div class="chat-panel panel panel-default">
 				<div class="panel-heading">
 					<i class="fa fa-comments fa-fw"></i> Latest
@@ -399,7 +203,7 @@ img{    width: 25px;
 						</ul>
 					</div>
 				</div>
-				<!-- /.panel-heading -->
+				
 				<div class="panel-body">
 					<ul class="chat">
 						<li class="left clearfix"><span class="chat-img pull-left">
@@ -462,7 +266,7 @@ img{    width: 25px;
 							</div></li>
 					</ul>
 				</div>
-				<!-- /.panel-body -->
+			
 				<div class="panel-footer">
 					<div class="input-group">
 						<input id="btn-input" type="text" class="form-control input-sm"
@@ -473,9 +277,13 @@ img{    width: 25px;
 						</span>
 					</div>
 				</div>
-				<!-- /.panel-footer -->
+			
 			</div>
-			<!-- /.panel .chat-panel -->
+			
+			-->
+			
+			
+		
 		</div>
 		<!-- /.col-lg-4 -->
 	</div>

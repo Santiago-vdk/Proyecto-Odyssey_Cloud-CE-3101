@@ -1,5 +1,9 @@
 package odyssey.logic;
 
+import javax.json.JsonArray;
+
+import org.json.simple.JSONArray;
+
 /**
  *
  * @author RafaelAngel
@@ -22,8 +26,8 @@ public class Sessions {
        return _singleton;
     }
 
-    public void createSession(String pUsername, String pToken, String pLoginTime) {
-    	SessionNode tmp = new SessionNode(pUsername, pToken, pLoginTime);
+    public void createSession(String pUsername, String pToken, String pLoginTime, String pListeningTo) {
+    	SessionNode tmp = new SessionNode(pUsername, pToken, pLoginTime, pListeningTo);
 
         if (_head == null) {
             _head = tmp;
@@ -97,6 +101,20 @@ public class Sessions {
            tmp = tmp.getNext();
        }
        return null;
+   }
+   
+   public JSONArray getOnlineSessions(){
+	   
+	   JSONArray lista = new JSONArray();
+	   SessionNode tmp = _head;
+	   while(tmp != null){
+		   
+		   lista.add(tmp.getSession().getUser());
+		   tmp = tmp.getNext();
+	   }
+	   return lista;
+	   
+	   
    }
 
   
